@@ -53,7 +53,17 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+/*
+|--------------------------------------------------------------------------
+| Dirección del frontend
+|--------------------------------------------------------------------------
+|
+| Esta dirección se utiliza para generar enlaces que deben abrirse
+| dentro de la aplicación desarrollada con React.
+|
+*/
 
+'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
