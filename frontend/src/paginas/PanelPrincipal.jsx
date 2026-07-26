@@ -6,8 +6,8 @@ import {
 import { useAutenticacion } from '../contextos/useAutenticacion.js'
 
 /**
- * Panel temporal para comprobar la autenticación
- * y la autorización según el rol.
+ * Panel temporal para mostrar las opciones
+ * disponibles según el rol del usuario.
  */
 export default function PanelPrincipal() {
   const {
@@ -29,7 +29,8 @@ export default function PanelPrincipal() {
     usuario?.rol === 'administrador'
 
   /**
-   * Cierra la sesión y regresa al formulario de acceso.
+   * Cierra la sesión y regresa
+   * al formulario de acceso.
    */
   async function manejarCierreSesion() {
     establecerCerrandoSesion(true)
@@ -84,23 +85,28 @@ export default function PanelPrincipal() {
             Área operativa
           </Link>
 
-          {/* Módulo operativo disponible para los tres roles. */}
           <Link to="/pedidos">
             Módulo de pedidos
           </Link>
 
-          {/* Solamente administrador y gerente. */}
+          {/* Disponible para administrador y gerente. */}
           {puedeGestionar && (
             <Link to="/area-gestion">
               Área de gestión
             </Link>
           )}
 
-          {/* Solamente administrador. */}
+          {/* Disponible únicamente para administrador. */}
           {puedeAdministrar && (
-            <Link to="/area-administracion">
-              Área administrativa
-            </Link>
+            <>
+              <Link to="/usuarios">
+                Administración de usuarios
+              </Link>
+
+              <Link to="/area-administracion">
+                Área administrativa
+              </Link>
+            </>
           )}
         </nav>
 
