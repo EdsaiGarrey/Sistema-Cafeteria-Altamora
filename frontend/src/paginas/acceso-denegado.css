@@ -1,0 +1,120 @@
+/*
+ * Página mostrada cuando el usuario no tiene
+ * el rol necesario para acceder a una sección.
+ */
+
+.acceso-denegado {
+  display: grid;
+  min-height: 100vh;
+  padding: 32px;
+  place-items: center;
+  color: #2f211c;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(145, 91, 57, 0.18),
+      transparent 38%
+    ),
+    #f7f1e9;
+}
+
+.acceso-denegado-contenido {
+  width: min(100%, 680px);
+  padding: clamp(32px, 6vw, 62px);
+  border: 1px solid #e5d5c7;
+  border-radius: 26px;
+  background: #fffdf9;
+  box-shadow: 0 24px 65px rgba(60, 39, 28, 0.14);
+}
+
+.acceso-denegado-codigo {
+  display: inline-flex;
+  margin-bottom: 22px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: #8e3d32;
+}
+
+.acceso-denegado-marca {
+  margin: 0 0 9px;
+  color: #76513b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.acceso-denegado h1 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 7vw, 58px);
+  line-height: 1.05;
+}
+
+.acceso-denegado-descripcion {
+  margin: 21px 0 30px;
+  color: #756961;
+  line-height: 1.7;
+}
+
+.acceso-denegado-detalles {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.acceso-denegado-detalles div {
+  display: grid;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid #eaded3;
+  border-radius: 13px;
+  background: #faf6f1;
+}
+
+.acceso-denegado-detalles span {
+  color: #91847b;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.acceso-denegado-detalles strong {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.acceso-denegado-boton {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+  background: #5d3c2b;
+}
+
+.acceso-denegado-boton:hover {
+  background: #40291e;
+}
+
+@media (max-width: 560px) {
+  .acceso-denegado {
+    padding: 20px;
+  }
+
+  .acceso-denegado-contenido {
+    padding: 31px 24px;
+  }
+
+  .acceso-denegado-boton {
+    width: 100%;
+  }
+}
