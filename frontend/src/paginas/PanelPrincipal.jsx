@@ -1,10 +1,13 @@
-
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import {
+  Link,
+  useNavigate,
+} from 'react-router'
 import { useAutenticacion } from '../contextos/useAutenticacion.js'
+
 /**
- * Página protegida utilizada para comprobar la autenticación.
- * El dashboard definitivo se desarrollará posteriormente.
+ * Panel temporal para comprobar la autenticación
+ * y la autorización según el rol.
  */
 export default function PanelPrincipal() {
   const {
@@ -14,12 +17,19 @@ export default function PanelPrincipal() {
 
   const navegar = useNavigate()
 
-  // Evita presionar varias veces el botón de cierre de sesión.
   const [cerrandoSesion, establecerCerrandoSesion] =
     useState(false)
 
+  const puedeGestionar = [
+    'administrador',
+    'gerente',
+  ].includes(usuario?.rol)
+
+  const puedeAdministrar =
+    usuario?.rol === 'administrador'
+
   /**
-   * Cierra la sesión en Laravel y regresa al formulario de acceso.
+   * Cierra la sesión y regresa al formulario de acceso.
    */
   async function manejarCierreSesion() {
     establecerCerrandoSesion(true)
@@ -42,12 +52,11 @@ export default function PanelPrincipal() {
           Altamora Café
         </p>
 
-        <h1>Sesión iniciada correctamente</h1>
+        <h1>Panel según tu rol</h1>
 
         <p>
-          Esta es una página protegida. Solamente puede
-          visualizarse cuando existe un token válido de
-          Laravel Sanctum.
+          Las opciones disponibles cambian dependiendo
+          del nivel de autorización del usuario.
         </p>
 
         <div className="panel-prueba-usuario">
@@ -60,7 +69,35 @@ export default function PanelPrincipal() {
           <small>
             {usuario?.correo ?? 'Correo no disponible'}
           </small>
+
+          <small>
+            Rol: {usuario?.rol ?? 'No disponible'}
+          </small>
         </div>
+
+        <nav
+          className="panel-prueba-opciones"
+          aria-label="Secciones disponibles"
+        >
+          {/* Disponible para los tres roles. */}
+          <Link to="/area-operativa">
+            Área operativa
+          </Link>
+
+          {/* Solamente administrador y gerente. */}
+          {puedeGestionar && (
+            <Link to="/area-gestion">
+              Área de gestión
+            </Link>
+          )}
+
+          {/* Solamente administrador. */}
+          {puedeAdministrar && (
+            <Link to="/area-administracion">
+              Área administrativa
+            </Link>
+          )}
+        </nav>
 
         <button
           type="button"
