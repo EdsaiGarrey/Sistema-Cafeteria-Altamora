@@ -1,74 +1,77 @@
-import { useEffect, useState } from "react";
-import "./App.css";
+import {
+  Navigate,
+  Route,
+  Routes,
+} from 'react-router'
+import RutaProtegida from './components/autenticacion/RutaProtegida.jsx'
+import InicioSesion from './paginas/autenticacion/InicioSesion.jsx'
 
+import Registro from './paginas/autenticacion/Registro.jsx'
+import RecuperarContrasena from './paginas/autenticacion/RecuperarContrasena.jsx'
+import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena.jsx'
+import PanelPrincipal from './paginas/PanelPrincipal.jsx'
+import './App.css'
+
+/**
+ * Registra las páginas públicas y protegidas del sistema.
+ */
 function App() {
-  // Guarda la información recibida desde la API de Laravel.
-  const [datosApi, setDatosApi] = useState(null);
-
-  // Indica si React todavía está esperando la respuesta del backend.
-  const [cargando, setCargando] = useState(true);
-
-  // Guarda un mensaje cuando ocurre un error de conexión.
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    // Consumimos el endpoint de prueba creado en Laravel.
-    fetch("http://127.0.0.1:8000/api/estado")
-      .then((respuesta) => {
-        // Validamos que Laravel responda correctamente.
-        if (!respuesta.ok) {
-          throw new Error("La API respondió con un error.");
-        }
-
-        return respuesta.json();
-      })
-      .then((datos) => {
-        // Guardamos la respuesta JSON enviada por Laravel.
-        setDatosApi(datos);
-      })
-      .catch((errorConexion) => {
-        // Mostramos un mensaje claro si React no puede comunicarse con Laravel.
-        setError(errorConexion.message);
-      })
-      .finally(() => {
-        // La petición terminó, haya sido exitosa o no.
-        setCargando(false);
-      });
-  }, []);
-
   return (
-    <main className="contenedor">
-      <section className="tarjeta">
-        <span className="etiqueta">Altamora Café</span>
+    <Routes>
+      {/* Página pública para iniciar sesión. */}
+      <Route
+        path="/inicio-sesion"
+        element={<InicioSesion />}
+      />
+{/* Página pública para registrar una cuenta. */}
+<Route
+  path="/registro"
+  element={<Registro />}
+/>
+{/* Página pública para recuperar la contraseña. */}
+<Route
+  path="/recuperar-contrasena"
+  element={<RecuperarContrasena />}
+/>
+{/* Página pública para establecer una contraseña nueva. */}
+<Route
+  path="/restablecer-contrasena"
+  element={<RestablecerContrasena />}
+/>
+      {/*
+       * Las rutas colocadas dentro de RutaProtegida
+       * requieren una sesión válida.
+       */}
+      <Route element={<RutaProtegida />}>
+        <Route
+          path="/panel"
+          element={<PanelPrincipal />}
+        />
+      </Route>
 
-        <h1>Conexión React + Laravel</h1>
+      {/* La dirección principal lleva al inicio de sesión. */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to="/inicio-sesion"
+            replace
+          />
+        }
+      />
 
-        <p className="descripcion">
-          Prueba inicial de comunicación entre el frontend y la API REST.
-        </p>
-
-        {cargando && (
-          <div className="mensaje cargando">
-            Conectando con la API de Laravel...
-          </div>
-        )}
-
-        {error && (
-          <div className="mensaje error">
-            No fue posible conectar con Laravel: {error}
-          </div>
-        )}
-
-        {datosApi && (
-          <div className="mensaje correcto">
-            <strong>{datosApi.mensaje}</strong>
-
-            <span>Aplicación: {datosApi.aplicacion}</span>
-          </div>
-        )}
-      </section>
-    </main>
-  );
+      {/* Las direcciones desconocidas regresan al acceso. */}
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/inicio-sesion"
+            replace
+          />
+        }
+      />
+    </Routes>
+  )
 }
 
-export default App;
+export default App

@@ -2,30 +2,49 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Get the attributes that should be cast.
+     * Campos que pueden asignarse de manera masiva.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+
+    /**
+     * Campos que no deben mostrarse al convertir el usuario a JSON.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Define la conversión automática de algunos atributos.
      *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
+            // Convierte la fecha de verificación en un objeto de fecha.
             'email_verified_at' => 'datetime',
+
+            // Hashea automáticamente la contraseña antes de guardarla.
             'password' => 'hashed',
         ];
     }
