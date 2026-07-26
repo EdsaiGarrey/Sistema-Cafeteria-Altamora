@@ -12,6 +12,7 @@ import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena
 import PanelPrincipal from './paginas/PanelPrincipal.jsx'
 import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import AreaAutorizada from './paginas/AreaAutorizada.jsx'
+import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import './App.css'
 
 /**
@@ -80,6 +81,28 @@ function App() {
             }
           />
         </Route>
+
+
+          <Route
+              path="/pedidos"
+              element={<Pedidos />}
+          />
+          <Route
+            path="/area-operativa"
+            element={
+              <AreaAutorizada
+                etiqueta="Área operativa"
+                titulo="Operación de la cafetería"
+                descripcion="Esta sección está disponible para administradores, gerentes y empleados."
+              />
+            }
+          />
+
+          <Route
+            path="/pedidos"
+            element={<Pedidos />}
+          />
+
 
         {/* Acceso exclusivo para administrador y gerente. */}
         <Route

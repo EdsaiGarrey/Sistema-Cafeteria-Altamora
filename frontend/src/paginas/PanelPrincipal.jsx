@@ -84,6 +84,11 @@ export default function PanelPrincipal() {
             Área operativa
           </Link>
 
+          {/* Módulo operativo disponible para los tres roles. */}
+          <Link to="/pedidos">
+            Módulo de pedidos
+          </Link>
+
           {/* Solamente administrador y gerente. */}
           {puedeGestionar && (
             <Link to="/area-gestion">
