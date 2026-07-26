@@ -80,3 +80,44 @@ Route::middleware('auth:sanctum')
             'cerrarSesion',
         ]);
     });
+    /*
+| Rutas temporales para comprobar los permisos por rol
+|--------------------------------------------------------------------------
+|
+| Estas rutas permiten verificar las respuestas 200 y 403 antes
+| de implementar los módulos administrativos definitivos.
+|
+*/
+
+// Disponible para los tres roles del sistema.
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente,empleado',
+])->get('/autorizacion/operacion', function () {
+    return response()->json([
+        'correcto' => true,
+        'mensaje' => 'Tienes acceso al área operativa.',
+    ]);
+});
+
+// Disponible únicamente para administrador y gerente.
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->get('/autorizacion/gestion', function () {
+    return response()->json([
+        'correcto' => true,
+        'mensaje' => 'Tienes acceso al área de gestión.',
+    ]);
+});
+
+// Disponible únicamente para el administrador.
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador',
+])->get('/autorizacion/administracion', function () {
+    return response()->json([
+        'correcto' => true,
+        'mensaje' => 'Tienes acceso al área administrativa.',
+    ]);
+});
