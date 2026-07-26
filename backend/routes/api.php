@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PedidoController;
+use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -144,3 +145,21 @@ Route::middleware('auth:sanctum')
         'show',
         'update',
     ]);
+
+    /*
+|--------------------------------------------------------------------------
+| Rutas protegidas del módulo de usuarios
+|--------------------------------------------------------------------------
+|
+| Solo un administrador autenticado puede consultar,
+| registrar, editar o eliminar usuarios.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador',
+])->apiResource(
+    'usuarios',
+    UsuarioController::class
+);

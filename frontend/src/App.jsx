@@ -13,6 +13,7 @@ import PanelPrincipal from './paginas/PanelPrincipal.jsx'
 import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import AreaAutorizada from './paginas/AreaAutorizada.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
+import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import './App.css'
 
 /**
@@ -44,8 +45,8 @@ function App() {
       />
 
       {/*
-       * Todas las rutas colocadas dentro de este grupo
-       * requieren primero una sesión válida.
+       * Todas las rutas de este grupo
+       * requieren una sesión válida.
        */}
       <Route element={<RutaProtegida />}>
         <Route
@@ -58,7 +59,10 @@ function App() {
           element={<AccesoDenegado />}
         />
 
-        {/* Acceso para administrador, gerente y empleado. */}
+        {/*
+         * Rutas disponibles para administrador,
+         * gerente y empleado.
+         */}
         <Route
           element={
             <RutaPorRol
@@ -80,31 +84,17 @@ function App() {
               />
             }
           />
-        </Route>
-
-
-          <Route
-              path="/pedidos"
-              element={<Pedidos />}
-          />
-          <Route
-            path="/area-operativa"
-            element={
-              <AreaAutorizada
-                etiqueta="Área operativa"
-                titulo="Operación de la cafetería"
-                descripcion="Esta sección está disponible para administradores, gerentes y empleados."
-              />
-            }
-          />
 
           <Route
             path="/pedidos"
             element={<Pedidos />}
           />
+        </Route>
 
-
-        {/* Acceso exclusivo para administrador y gerente. */}
+        {/*
+         * Rutas disponibles para administrador
+         * y gerente.
+         */}
         <Route
           element={
             <RutaPorRol
@@ -127,7 +117,9 @@ function App() {
           />
         </Route>
 
-        {/* Acceso exclusivo para administrador. */}
+        {/*
+         * Rutas exclusivas del administrador.
+         */}
         <Route
           element={
             <RutaPorRol
@@ -146,6 +138,11 @@ function App() {
                 descripcion="Esta sección está reservada exclusivamente para usuarios administradores."
               />
             }
+          />
+
+          <Route
+            path="/usuarios"
+            element={<Usuarios />}
           />
         </Route>
       </Route>
