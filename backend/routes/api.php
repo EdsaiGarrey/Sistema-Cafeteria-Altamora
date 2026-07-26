@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PedidoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,3 +81,24 @@ Route::middleware('auth:sanctum')
             'cerrarSesion',
         ]);
     });
+
+    /*
+|--------------------------------------------------------------------------
+| Rutas protegidas del módulo de pedidos
+|--------------------------------------------------------------------------
+|
+| Estas rutas requieren un token válido de Laravel Sanctum.
+|
+*/
+
+Route::middleware('auth:sanctum')
+    ->apiResource(
+        'pedidos',
+        PedidoController::class
+    )
+    ->only([
+        'index',
+        'store',
+        'show',
+        'update',
+    ]);

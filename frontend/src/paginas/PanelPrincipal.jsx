@@ -62,6 +62,15 @@ export default function PanelPrincipal() {
           </small>
         </div>
 
+
+
+        <button
+          type="button"
+          onClick={() => navegar('/pedidos')}
+        >
+          Abrir módulo de pedidos
+        </button>
+
         <button
           type="button"
           onClick={manejarCierreSesion}
@@ -71,6 +80,8 @@ export default function PanelPrincipal() {
             ? 'Cerrando sesión...'
             : 'Cerrar sesión'}
         </button>
+
+
       </section>
     </main>
   )

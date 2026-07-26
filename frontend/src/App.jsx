@@ -10,6 +10,7 @@ import Registro from './paginas/autenticacion/Registro.jsx'
 import RecuperarContrasena from './paginas/autenticacion/RecuperarContrasena.jsx'
 import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena.jsx'
 import PanelPrincipal from './paginas/PanelPrincipal.jsx'
+import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import './App.css'
 
 /**
@@ -46,6 +47,11 @@ function App() {
         <Route
           path="/panel"
           element={<PanelPrincipal />}
+          />
+
+      <Route
+        path="/pedidos"
+         element={<Pedidos />}
         />
       </Route>
 
