@@ -14,6 +14,7 @@ import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import AreaAutorizada from './paginas/AreaAutorizada.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
+import Categorias from './paginas/categorias/Categorias.jsx'
 import './App.css'
 
 /**
@@ -115,6 +116,10 @@ function App() {
               />
             }
           />
+          <Route
+  path="/categorias"
+  element={<Categorias />}
+/>
         </Route>
 
         {/*

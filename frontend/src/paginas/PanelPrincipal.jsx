@@ -91,11 +91,16 @@ export default function PanelPrincipal() {
 
           {/* Disponible para administrador y gerente. */}
           {puedeGestionar && (
-            <Link to="/area-gestion">
-              Área de gestión
-            </Link>
-          )}
+  <>
+    <Link to="/area-gestion">
+      Área de gestión
+    </Link>
 
+    <Link to="/categorias">
+      Administración de categorías
+    </Link>
+  </>
+)}
           {/* Disponible únicamente para administrador. */}
           {puedeAdministrar && (
             <>
