@@ -142,11 +142,13 @@ El empleado no tendrá acceso a la administración de usuarios, asignación de r
 - GitHub Projects
 
 ## Repositorio de GitHub
-
 https://github.com/EdsaiGarrey/sistema-cafeteria-altamora
 
 ## Tablero de GitHub Projects
 https://github.com/EdsaiGarrey/Sistema-Cafeteria-Altamora/projects
+
+## LINK DE FIGMA 
+https://www.figma.com/design/CcHQIZrLQC9spDhtGHuYSO/cafe-altamora-login?node-id=0-1&t=3R48zDdMWzb5XXDZ-1
 
 ## Estado del proyecto
 
