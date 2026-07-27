@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PedidoController;
 use App\Http\Controllers\Api\UsuarioController;
+use App\Http\Controllers\Api\CategoriaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -162,4 +163,20 @@ Route::middleware([
 ])->apiResource(
     'usuarios',
     UsuarioController::class
+);
+/*
+|--------------------------------------------------------------------------
+| Rutas protegidas del módulo de categorías
+|--------------------------------------------------------------------------
+|
+| El administrador y el gerente pueden administrar categorías.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->apiResource(
+    'categorias',
+    CategoriaController::class
 );
