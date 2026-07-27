@@ -5,19 +5,23 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router'
+import {
+  Alert,
+  Button,
+  Form,
+  InputGroup,
+  Spinner,
+} from 'react-bootstrap'
+import DisenoAutenticacion from '../../components/autenticacion/DisenoAutenticacion.jsx'
 import { useAutenticacion } from '../../contextos/useAutenticacion.js'
-import './autenticacion.css'
 
-/*
- * Valores iniciales del formulario de inicio de sesión.
- */
 const FORMULARIO_INICIAL = {
   email: '',
   password: '',
 }
 
 /**
- * Muestra el formulario para iniciar sesión en Altamora Café.
+ * Formulario para iniciar sesión.
  */
 export default function InicioSesion() {
   const {
@@ -28,53 +32,37 @@ export default function InicioSesion() {
   const navegar = useNavigate()
   const ubicacion = useLocation()
 
-  // Almacena la información escrita por el usuario.
   const [formulario, establecerFormulario] =
     useState(FORMULARIO_INICIAL)
 
-  // Almacena los errores enviados por Laravel.
   const [errores, establecerErrores] = useState({})
-
-  // Muestra errores generales de autenticación o conexión.
   const [mensajeError, establecerMensajeError] =
     useState('')
 
-  // Evita enviar varias veces el formulario.
   const [procesando, establecerProcesando] =
     useState(false)
 
-  // Controla si la contraseña puede verse temporalmente.
   const [
     mostrarContrasena,
     establecerMostrarContrasena,
   ] = useState(false)
 
-  /**
-   * Actualiza el campo correspondiente del formulario.
-   */
   function manejarCambio(evento) {
     const { name, value } = evento.target
 
-    establecerFormulario((formularioActual) => ({
-      ...formularioActual,
+    establecerFormulario((actual) => ({
+      ...actual,
       [name]: value,
     }))
 
-    /*
-     * Eliminamos el error del campo cuando el usuario
-     * empieza a corregir su información.
-     */
-    establecerErrores((erroresActuales) => ({
-      ...erroresActuales,
+    establecerErrores((actuales) => ({
+      ...actuales,
       [name]: undefined,
     }))
 
     establecerMensajeError('')
   }
 
-  /**
-   * Envía las credenciales a Laravel.
-   */
   async function manejarEnvio(evento) {
     evento.preventDefault()
 
@@ -88,22 +76,11 @@ export default function InicioSesion() {
         password: formulario.password,
       })
 
-      /*
-       * Si el usuario intentó abrir previamente una ruta
-       * protegida, regresamos a ella. En caso contrario,
-       * lo enviamos al panel principal.
-       */
-      const destino =
-        ubicacion.state?.desde ?? '/panel'
-
-      navegar(destino, {
-        replace: true,
-      })
+      navegar(
+        ubicacion.state?.desde ?? '/panel',
+        { replace: true },
+      )
     } catch (error) {
-      /*
-       * Laravel responde con 422 cuando existen errores
-       * específicos en los campos del formulario.
-       */
       if (error.estado === 422) {
         establecerErrores(
           error.datos?.errors ?? {},
@@ -112,10 +89,6 @@ export default function InicioSesion() {
         return
       }
 
-      /*
-       * Los errores 401 corresponden normalmente a
-       * credenciales que no coinciden.
-       */
       establecerMensajeError(
         error.message ??
           'No fue posible iniciar sesión.',
@@ -125,254 +98,123 @@ export default function InicioSesion() {
     }
   }
 
-  /*
-   * Una persona autenticada no necesita volver
-   * a visualizar el formulario de acceso.
-   */
   if (estaAutenticado) {
     return <Navigate to="/panel" replace />
   }
 
   return (
-    <main className="autenticacion-pagina">
-      <section className="autenticacion-presentacion">
-        <div className="autenticacion-marca">
-          <span
-            className="autenticacion-logotipo"
-            aria-hidden="true"
-          >
-            A
-          </span>
+    <DisenoAutenticacion
+      titulo="Iniciar sesión"
+      descripcion="Accede al sistema de gestión de Café Altamora."
+    >
+      {mensajeError && (
+        <Alert variant="danger">
+          {mensajeError}
+        </Alert>
+      )}
 
-          <div>
-            <p className="autenticacion-marca-superior">
-              Cafetería
-            </p>
+      <Form
+        className="altamora-auth-formulario"
+        onSubmit={manejarEnvio}
+        noValidate
+      >
+        <Form.Group controlId="email">
+          <Form.Label>
+            Correo electrónico
+          </Form.Label>
 
-            <h1>Altamora</h1>
-          </div>
-        </div>
+          <Form.Control
+            name="email"
+            type="email"
+            value={formulario.email}
+            onChange={manejarCambio}
+            placeholder="usuario@altamora.com"
+            autoComplete="email"
+            isInvalid={Boolean(errores.email)}
+            disabled={procesando}
+          />
 
-        <div className="autenticacion-presentacion-contenido">
-          <p className="autenticacion-etiqueta">
-            Sistema integral de gestión
-          </p>
+          <Form.Control.Feedback type="invalid">
+            {errores.email?.[0]}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-          <h2>
-            Administra cada detalle de tu cafetería
-            desde un solo lugar.
-          </h2>
+        <Form.Group controlId="password">
+          <div className="d-flex justify-content-between">
+            <Form.Label>Contraseña</Form.Label>
 
-          <p>
-            Controla usuarios, productos, inventario,
-            pedidos y operaciones con información clara,
-            segura y organizada.
-          </p>
-
-          <div className="autenticacion-beneficios">
-            <article>
-              <strong>Gestión segura</strong>
-              <span>
-                Acceso protegido mediante Laravel Sanctum.
-              </span>
-            </article>
-
-            <article>
-              <strong>Información centralizada</strong>
-              <span>
-                Toda la operación de Altamora en una
-                plataforma.
-              </span>
-            </article>
-          </div>
-        </div>
-
-        <p className="autenticacion-pie-presentacion">
-          Altamora Café · Calidad en cada proceso
-        </p>
-      </section>
-
-      <section className="autenticacion-formulario-seccion">
-        <div className="autenticacion-formulario-contenedor">
-          <header className="autenticacion-encabezado">
-            <p>Bienvenido nuevamente</p>
-            <h2>Iniciar sesión</h2>
-
-            <span>
-              Ingresa tus credenciales para acceder al
-              sistema.
-            </span>
-          </header>
-
-          {mensajeError && (
-            <div
-              className="autenticacion-alerta autenticacion-alerta-error"
-              role="alert"
+            <Link
+              to="/recuperar-contrasena"
+              className="altamora-auth-enlace"
             >
-              <span aria-hidden="true">!</span>
-              <p>{mensajeError}</p>
-            </div>
-          )}
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
-          <form
-            className="autenticacion-formulario"
-            onSubmit={manejarEnvio}
-            noValidate
-          >
-            <div className="autenticacion-campo">
-              <label htmlFor="email">
-                Correo electrónico
-              </label>
+          <InputGroup>
+            <Form.Control
+              name="password"
+              type={
+                mostrarContrasena
+                  ? 'text'
+                  : 'password'
+              }
+              value={formulario.password}
+              onChange={manejarCambio}
+              placeholder="Escribe tu contraseña"
+              autoComplete="current-password"
+              isInvalid={Boolean(errores.password)}
+              disabled={procesando}
+            />
 
-              <div
-                className={`autenticacion-entrada ${
-                  errores.email
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">@</span>
-
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formulario.email}
-                  onChange={manejarCambio}
-                  placeholder="usuario@altamora.com"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errores.email)}
-                  aria-describedby={
-                    errores.email
-                      ? 'error-email'
-                      : undefined
-                  }
-                  disabled={procesando}
-                />
-              </div>
-
-              {errores.email && (
-                <p
-                  id="error-email"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.email[0]}
-                </p>
-              )}
-            </div>
-
-            <div className="autenticacion-campo">
-              <div className="autenticacion-fila-etiqueta">
-                <label htmlFor="password">
-                  Contraseña
-                </label>
-
-                <Link to="/recuperar-contrasena">
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-
-              <div
-                className={`autenticacion-entrada ${
-                  errores.password
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">●</span>
-
-                <input
-                  id="password"
-                  name="password"
-                  type={
-                    mostrarContrasena
-                      ? 'text'
-                      : 'password'
-                  }
-                  value={formulario.password}
-                  onChange={manejarCambio}
-                  placeholder="Escribe tu contraseña"
-                  autoComplete="current-password"
-                  aria-invalid={Boolean(
-                    errores.password,
-                  )}
-                  aria-describedby={
-                    errores.password
-                      ? 'error-password'
-                      : undefined
-                  }
-                  disabled={procesando}
-                />
-
-                <button
-                  type="button"
-                  className="autenticacion-mostrar"
-                  onClick={() =>
-                    establecerMostrarContrasena(
-                      (estadoActual) =>
-                        !estadoActual,
-                    )
-                  }
-                  aria-label={
-                    mostrarContrasena
-                      ? 'Ocultar contraseña'
-                      : 'Mostrar contraseña'
-                  }
-                  disabled={procesando}
-                >
-                  {mostrarContrasena
-                    ? 'Ocultar'
-                    : 'Mostrar'}
-                </button>
-              </div>
-
-              {errores.password && (
-                <p
-                  id="error-password"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.password[0]}
-                </p>
-              )}
-            </div>
-
-            <button
-              className="autenticacion-boton-principal"
-              type="submit"
+            <Button
+              type="button"
+              variant="outline-secondary"
+              onClick={() =>
+                establecerMostrarContrasena(
+                  (actual) => !actual,
+                )
+              }
               disabled={procesando}
             >
-              {procesando && (
-                <span
-                  className="autenticacion-cargador"
-                  aria-hidden="true"
-                />
-              )}
+              {mostrarContrasena
+                ? 'Ocultar'
+                : 'Mostrar'}
+            </Button>
 
-              {procesando
-                ? 'Iniciando sesión...'
-                : 'Iniciar sesión'}
-            </button>
-          </form>
+            <Form.Control.Feedback type="invalid">
+              {errores.password?.[0]}
+            </Form.Control.Feedback>
+          </InputGroup>
+        </Form.Group>
 
-          <div className="autenticacion-separador">
-            <span />
-            <p>Cuenta nueva</p>
-            <span />
-          </div>
+        <Button
+          type="submit"
+          className="altamora-auth-boton"
+          disabled={procesando}
+        >
+          {procesando && (
+            <Spinner
+              size="sm"
+              className="me-2"
+              aria-hidden="true"
+            />
+          )}
 
-          <p className="autenticacion-enlace-registro">
-            ¿Aún no tienes una cuenta?{' '}
-            <Link to="/registro">
-              Crear una cuenta
-            </Link>
-          </p>
+          {procesando
+            ? 'Iniciando sesión...'
+            : 'Iniciar sesión'}
+        </Button>
 
-          <footer className="autenticacion-pie-formulario">
-            <span aria-hidden="true">◆</span>
-            Conexión protegida y datos cifrados
-          </footer>
-        </div>
-      </section>
-    </main>
+        <Link
+          to="/registro"
+          className={
+            'btn altamora-auth-boton-secundario'
+          }
+        >
+          Crear cuenta
+        </Link>
+      </Form>
+    </DisenoAutenticacion>
   )
 }
