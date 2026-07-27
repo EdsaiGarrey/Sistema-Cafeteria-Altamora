@@ -3,55 +3,62 @@ import {
   Link,
   Navigate,
 } from 'react-router'
+import {
+  Alert,
+  Button,
+  Form,
+  Spinner,
+} from 'react-bootstrap'
+import DisenoAutenticacion from '../../components/autenticacion/DisenoAutenticacion.jsx'
 import { useAutenticacion } from '../../contextos/useAutenticacion.js'
 import { apiAutenticacion } from '../../servicios/api.js'
-import './autenticacion.css'
 
 /**
- * Muestra el formulario para solicitar el enlace
- * de recuperación de contraseña.
+ * Solicita el enlace para recuperar
+ * la contraseña de una cuenta.
  */
 export default function RecuperarContrasena() {
   const {
     estaAutenticado,
   } = useAutenticacion()
 
-  // Correo electrónico escrito por el usuario.
   const [email, establecerEmail] = useState('')
-
-  // Errores específicos enviados por Laravel.
-  const [errores, establecerErrores] = useState({})
-
-  // Mensaje general cuando ocurre un problema.
-  const [mensajeError, establecerMensajeError] =
+  const [errorEmail, establecerErrorEmail] =
     useState('')
 
-  // Mensaje mostrado cuando Laravel procesa la solicitud.
-  const [mensajeExito, establecerMensajeExito] =
-    useState('')
+  const [
+    mensajeError,
+    establecerMensajeError,
+  ] = useState('')
 
-  // Evita enviar el formulario varias veces.
-  const [procesando, establecerProcesando] =
-    useState(false)
+  const [
+    mensajeExito,
+    establecerMensajeExito,
+  ] = useState('')
+
+  const [
+    procesando,
+    establecerProcesando,
+  ] = useState(false)
 
   /**
-   * Actualiza el correo y elimina los mensajes anteriores.
+   * Actualiza el correo y limpia mensajes anteriores.
    */
   function manejarCambio(evento) {
     establecerEmail(evento.target.value)
-    establecerErrores({})
+    establecerErrorEmail('')
     establecerMensajeError('')
     establecerMensajeExito('')
   }
 
   /**
-   * Solicita a Laravel el enlace de recuperación.
+   * Envía el correo a la API de Laravel.
    */
   async function manejarEnvio(evento) {
     evento.preventDefault()
 
     establecerProcesando(true)
-    establecerErrores({})
+    establecerErrorEmail('')
     establecerMensajeError('')
     establecerMensajeExito('')
 
@@ -63,29 +70,24 @@ export default function RecuperarContrasena() {
 
       establecerMensajeExito(
         respuesta.mensaje ??
-          'El enlace de recuperación fue generado correctamente.',
+          'El enlace de recuperación fue enviado.',
       )
     } catch (error) {
-      /*
-       * Los errores 422 contienen mensajes relacionados
-       * con los campos del formulario.
-       */
+      const errores =
+        error.datos?.errors ??
+        error.datos?.errores ??
+        {}
+
       if (error.estado === 422) {
-        establecerErrores(
-          error.datos?.errors ?? {},
+        establecerErrorEmail(
+          errores.email?.[0] ?? '',
         )
-
-        establecerMensajeError(
-          error.datos?.mensaje ??
-            error.message,
-        )
-
-        return
       }
 
       establecerMensajeError(
-        error.message ??
-          'No fue posible solicitar la recuperación.',
+        error.datos?.mensaje ??
+          error.message ??
+          'No fue posible enviar el enlace.',
       )
     } finally {
       establecerProcesando(false)
@@ -93,194 +95,94 @@ export default function RecuperarContrasena() {
   }
 
   /*
-   * Una persona autenticada no necesita recuperar
-   * su contraseña desde esta pantalla.
+   * Un usuario autenticado no necesita
+   * recuperar su contraseña desde aquí.
    */
   if (estaAutenticado) {
     return <Navigate to="/panel" replace />
   }
 
   return (
-    <main className="autenticacion-pagina">
-      <section className="autenticacion-presentacion">
-        <div className="autenticacion-marca">
-          <span
-            className="autenticacion-logotipo"
-            aria-hidden="true"
-          >
-            A
-          </span>
+    <DisenoAutenticacion
+      titulo="Recuperar contraseña"
+      descripcion="Escribe el correo asociado con tu cuenta."
+    >
+      {mensajeExito && (
+        <Alert variant="success">
+          <Alert.Heading className="fs-6">
+            Solicitud realizada
+          </Alert.Heading>
 
-          <div>
-            <p className="autenticacion-marca-superior">
-              Cafetería
-            </p>
-
-            <h1>Altamora</h1>
-          </div>
-        </div>
-
-        <div className="autenticacion-presentacion-contenido">
-          <p className="autenticacion-etiqueta">
-            Recuperación segura
+          <p className="mb-0">
+            {mensajeExito}
           </p>
+        </Alert>
+      )}
 
-          <h2>
-            Recupera el acceso a tu cuenta de manera
-            sencilla y segura.
-          </h2>
+      {mensajeError && (
+        <Alert variant="danger">
+          {mensajeError}
+        </Alert>
+      )}
 
-          <p>
-            Proporciona el correo asociado con tu cuenta.
-            Recibirás un enlace temporal para establecer
+      <Form
+        className="altamora-auth-formulario"
+        onSubmit={manejarEnvio}
+        noValidate
+      >
+        <Form.Group controlId="email-recuperacion">
+          <Form.Label>
+            Correo electrónico
+          </Form.Label>
+
+          <Form.Control
+            name="email"
+            type="email"
+            value={email}
+            onChange={manejarCambio}
+            placeholder="usuario@altamora.com"
+            autoComplete="email"
+            isInvalid={Boolean(errorEmail)}
+            disabled={procesando}
+          />
+
+          <Form.Control.Feedback type="invalid">
+            {errorEmail}
+          </Form.Control.Feedback>
+
+          <Form.Text className="text-muted">
+            Recibirás un enlace temporal para crear
             una contraseña nueva.
-          </p>
+          </Form.Text>
+        </Form.Group>
 
-          <div className="autenticacion-beneficios">
-            <article>
-              <strong>Enlace temporal</strong>
-
-              <span>
-                El token de recuperación solamente podrá
-                utilizarse durante un tiempo limitado.
-              </span>
-            </article>
-
-            <article>
-              <strong>Sesiones protegidas</strong>
-
-              <span>
-                Las sesiones anteriores se eliminarán al
-                cambiar la contraseña.
-              </span>
-            </article>
-          </div>
-        </div>
-
-        <p className="autenticacion-pie-presentacion">
-          Altamora Café · Seguridad en cada proceso
-        </p>
-      </section>
-
-      <section className="autenticacion-formulario-seccion">
-        <div className="autenticacion-formulario-contenedor">
-          <header className="autenticacion-encabezado">
-            <p>Recuperación de acceso</p>
-
-            <h2>¿Olvidaste tu contraseña?</h2>
-
-            <span>
-              Escribe tu correo para recibir el enlace de
-              recuperación.
-            </span>
-          </header>
-
-          {mensajeExito && (
-            <div
-              className="autenticacion-alerta autenticacion-alerta-exito"
-              role="status"
-            >
-              <span aria-hidden="true">✓</span>
-
-              <p>{mensajeExito}</p>
-            </div>
+        <Button
+          type="submit"
+          className="altamora-auth-boton"
+          disabled={procesando}
+        >
+          {procesando && (
+            <Spinner
+              size="sm"
+              className="me-2"
+              aria-hidden="true"
+            />
           )}
 
-          {mensajeError && (
-            <div
-              className="autenticacion-alerta autenticacion-alerta-error"
-              role="alert"
-            >
-              <span aria-hidden="true">!</span>
+          {procesando
+            ? 'Enviando enlace...'
+            : 'Enviar enlace de recuperación'}
+        </Button>
 
-              <p>{mensajeError}</p>
-            </div>
-          )}
-
-          <form
-            className="autenticacion-formulario"
-            onSubmit={manejarEnvio}
-            noValidate
-          >
-            <div className="autenticacion-campo">
-              <label htmlFor="email">
-                Correo electrónico
-              </label>
-
-              <div
-                className={`autenticacion-entrada ${
-                  errores.email
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">@</span>
-
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={manejarCambio}
-                  placeholder="usuario@altamora.com"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errores.email)}
-                  aria-describedby={
-                    errores.email
-                      ? 'error-email-recuperacion'
-                      : undefined
-                  }
-                  disabled={procesando}
-                />
-              </div>
-
-              {errores.email && (
-                <p
-                  id="error-email-recuperacion"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.email[0]}
-                </p>
-              )}
-            </div>
-
-            <button
-              className="autenticacion-boton-principal"
-              type="submit"
-              disabled={procesando}
-            >
-              {procesando && (
-                <span
-                  className="autenticacion-cargador"
-                  aria-hidden="true"
-                />
-              )}
-
-              {procesando
-                ? 'Enviando enlace...'
-                : 'Enviar enlace de recuperación'}
-            </button>
-          </form>
-
-          <div className="autenticacion-separador">
-            <span />
-            <p>Regresar</p>
-            <span />
-          </div>
-
-          <p className="autenticacion-enlace-registro">
-            ¿Recordaste tu contraseña?{' '}
-            <Link to="/inicio-sesion">
-              Iniciar sesión
-            </Link>
-          </p>
-
-          <footer className="autenticacion-pie-formulario">
-            <span aria-hidden="true">◆</span>
-            Recuperación protegida por Laravel
-          </footer>
-        </div>
-      </section>
-    </main>
+        <Link
+          to="/inicio-sesion"
+          className={
+            'btn altamora-auth-boton-secundario'
+          }
+        >
+          Regresar al inicio de sesión
+        </Link>
+      </Form>
+    </DisenoAutenticacion>
   )
 }
