@@ -4,43 +4,45 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Categoria extends Model
+class Producto extends Model
 {
-    /** @use HasFactory<\Database\Factories\CategoriaFactory> */
+    /** @use HasFactory<\Database\Factories\ProductoFactory> */
     use HasFactory;
 
     /**
-     * Campos permitidos para registrar
-     * o actualizar una categoría.
+     * Campos que se pueden registrar o actualizar.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'categoria_id',
         'nombre',
-        'slug',
         'descripcion',
+        'precio',
+        'imagen',
         'activo',
     ];
 
     /**
-     * Convierte el estado en verdadero o falso.
+     * Convierte los datos al tipo correcto.
      *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
+            'precio' => 'decimal:2',
             'activo' => 'boolean',
         ];
     }
 
     /**
-     * Una categoría puede tener varios productos.
+     * Categoría a la que pertenece el producto.
      */
-    public function productos(): HasMany
+    public function categoria(): BelongsTo
     {
-        return $this->hasMany(Producto::class);
+        return $this->belongsTo(Categoria::class);
     }
 }

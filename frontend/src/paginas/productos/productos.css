@@ -1,0 +1,257 @@
+.productos-pagina {
+  min-height: 100vh;
+  padding: 40px;
+  background: linear-gradient(
+    135deg,
+    #f8f2ea,
+    #ead8c7
+  );
+  color: #35231c;
+}
+
+.productos-encabezado {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto 24px;
+}
+
+.productos-encabezado h1,
+.productos-formulario-panel h2,
+.productos-confirmacion h2 {
+  margin: 5px 0 10px;
+  font-family: Georgia, serif;
+}
+
+.productos-encabezado p {
+  margin: 0;
+}
+
+.productos-marca {
+  color: #96552c;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.productos-acciones,
+.productos-formulario-acciones,
+.productos-botones-tabla {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productos-boton-principal,
+.productos-boton-secundario,
+.productos-boton-eliminar,
+.productos-botones-tabla button {
+  border-radius: 10px;
+  padding: 11px 17px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.productos-boton-principal {
+  border: 1px solid #8d4a26;
+  background: #8d4a26;
+  color: #ffffff;
+}
+
+.productos-boton-secundario {
+  border: 1px solid #cdb29e;
+  background: #fffaf5;
+  color: #5b3929;
+}
+
+.productos-boton-eliminar {
+  border: 1px solid #a94036;
+  background: #a94036;
+  color: #ffffff;
+}
+
+.productos-boton-principal:disabled,
+.productos-boton-secundario:disabled,
+.productos-boton-eliminar:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.productos-alerta {
+  max-width: 1200px;
+  box-sizing: border-box;
+  margin: 0 auto 18px;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.productos-exito {
+  border: 1px solid #9fc191;
+  background: #edf7e9;
+  color: #2f672c;
+}
+
+.productos-error {
+  border: 1px solid #dcaaa4;
+  background: #fff0ee;
+  color: #8d2f29;
+}
+
+.productos-formulario-panel,
+.productos-confirmacion {
+  max-width: 680px;
+  margin: 0 auto 24px;
+  border: 1px solid #dfcbbc;
+  border-radius: 18px;
+  padding: 24px;
+  background: #fffdf9;
+  box-shadow: 0 18px 45px rgb(67 39 25 / 12%);
+}
+
+.productos-formulario {
+  display: grid;
+  gap: 17px;
+}
+
+.productos-campo {
+  display: grid;
+  gap: 7px;
+}
+
+.productos-campo label {
+  font-weight: 700;
+}
+
+.productos-campo input,
+.productos-campo select,
+.productos-campo textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d7c4b6;
+  border-radius: 10px;
+  padding: 12px;
+  background: #ffffff;
+  color: #35231c;
+  font: inherit;
+}
+
+.productos-campo input:focus,
+.productos-campo select:focus,
+.productos-campo textarea:focus {
+  border-color: #96552c;
+  outline: 3px solid rgb(150 85 44 / 12%);
+}
+
+.productos-casilla {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+}
+
+.productos-error-campo {
+  color: #a5352f;
+  font-weight: 700;
+}
+
+.productos-formulario-acciones {
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+
+.productos-contenedor {
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-x: auto;
+  border: 1px solid #dfcbbc;
+  border-radius: 18px;
+  background: #fffdf9;
+  box-shadow: 0 18px 45px rgb(67 39 25 / 10%);
+}
+
+.productos-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.productos-tabla th,
+.productos-tabla td {
+  padding: 16px;
+  border-bottom: 1px solid #eee0d5;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.productos-tabla th {
+  background: #f5e9dd;
+  color: #65422f;
+}
+
+.productos-tabla td strong,
+.productos-tabla td small {
+  display: block;
+}
+
+.productos-tabla td small {
+  max-width: 350px;
+  margin-top: 5px;
+  color: #89766b;
+}
+
+.productos-botones-tabla button:first-child {
+  border: 1px solid #c3946d;
+  background: #fff8ef;
+  color: #75431f;
+}
+
+.productos-botones-tabla button:last-child {
+  border: 1px solid #a94036;
+  background: #a94036;
+  color: #ffffff;
+}
+
+.productos-vacio {
+  margin: 0;
+  padding: 55px 24px;
+  text-align: center;
+}
+
+.productos-confirmacion {
+  margin-top: 24px;
+}
+
+@media (max-width: 760px) {
+  .productos-pagina {
+    padding: 24px 16px;
+  }
+
+  .productos-encabezado {
+    flex-direction: column;
+  }
+
+  .productos-acciones {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .productos-acciones button {
+    width: 100%;
+  }
+
+  .productos-formulario-acciones {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .productos-formulario-acciones button {
+    width: 100%;
+  }
+
+  .productos-botones-tabla {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

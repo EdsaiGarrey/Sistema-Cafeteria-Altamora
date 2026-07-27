@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PedidoController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\ProductoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -179,4 +180,20 @@ Route::middleware([
 ])->apiResource(
     'categorias',
     CategoriaController::class
+);
+/*
+|--------------------------------------------------------------------------
+| Rutas protegidas del módulo de productos
+|--------------------------------------------------------------------------
+|
+| El administrador y el gerente pueden administrar productos.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->apiResource(
+    'productos',
+    ProductoController::class
 );
