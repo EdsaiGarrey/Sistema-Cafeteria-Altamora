@@ -17,8 +17,10 @@ export default function PanelPrincipal() {
 
   const navegar = useNavigate()
 
-  const [cerrandoSesion, establecerCerrandoSesion] =
-    useState(false)
+  const [
+    cerrandoSesion,
+    establecerCerrandoSesion,
+  ] = useState(false)
 
   const puedeGestionar = [
     'administrador',
@@ -68,7 +70,8 @@ export default function PanelPrincipal() {
           </strong>
 
           <small>
-            {usuario?.correo ?? 'Correo no disponible'}
+            {usuario?.correo ??
+              'Correo no disponible'}
           </small>
 
           <small>
@@ -91,16 +94,21 @@ export default function PanelPrincipal() {
 
           {/* Disponible para administrador y gerente. */}
           {puedeGestionar && (
-  <>
-    <Link to="/area-gestion">
-      Área de gestión
-    </Link>
+            <>
+              <Link to="/area-gestion">
+                Área de gestión
+              </Link>
 
-    <Link to="/categorias">
-      Administración de categorías
-    </Link>
-  </>
-)}
+              <Link to="/categorias">
+                Administración de categorías
+              </Link>
+
+              <Link to="/productos">
+                Administración de productos
+              </Link>
+            </>
+          )}
+
           {/* Disponible únicamente para administrador. */}
           {puedeAdministrar && (
             <>

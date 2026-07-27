@@ -15,6 +15,7 @@ import AreaAutorizada from './paginas/AreaAutorizada.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
+import Productos from './paginas/productos/Productos.jsx'
 import './App.css'
 
 /**
@@ -125,6 +126,10 @@ function App() {
         {/*
          * Rutas exclusivas del administrador.
          */}
+         <Route
+  path="/productos"
+  element={<Productos />}
+/>
         <Route
           element={
             <RutaPorRol
