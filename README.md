@@ -148,7 +148,7 @@ https://github.com/EdsaiGarrey/sistema-cafeteria-altamora
 https://github.com/EdsaiGarrey/Sistema-Cafeteria-Altamora/projects
 
 ## LINK DE FIGMA 
-https://www.figma.com/design/CcHQIZrLQC9spDhtGHuYSO/cafe-altamora-login?node-id=0-1&t=3R48zDdMWzb5XXDZ-1
+https://www.figma.com/proto/CcHQIZrLQC9spDhtGHuYSO/cafe-altamora-login?node-id=7-6&p=f&t=3R48zDdMWzb5XXDZ-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=7%3A6&show-proto-sidebar=1
 
 ## Estado del proyecto
 
