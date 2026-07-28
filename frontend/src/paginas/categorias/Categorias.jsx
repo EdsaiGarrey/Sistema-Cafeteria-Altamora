@@ -3,7 +3,16 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { useNavigate } from 'react-router'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Spinner,
+  Table,
+} from 'react-bootstrap'
+import FormularioCategoria from '../../components/categorias/FormularioCategoria.jsx'
+import ConfirmarCategoria from '../../components/categorias/ConfirmarCategoria.jsx'
 import { apiCategorias } from '../../servicios/categorias.js'
 import './categorias.css'
 
@@ -14,13 +23,19 @@ const FORMULARIO_INICIAL = {
 }
 
 /**
- * Pantalla para administrar categorías.
+ * Administración de categorías de productos.
  */
 export default function Categorias() {
-  const navegar = useNavigate()
+  const [
+    categorias,
+    establecerCategorias,
+  ] = useState([])
 
-  const [categorias, establecerCategorias] = useState([])
-  const [cargando, establecerCargando] = useState(true)
+  const [
+    cargando,
+    establecerCargando,
+  ] = useState(true)
+
   const [error, establecerError] = useState('')
   const [mensaje, establecerMensaje] = useState('')
 
@@ -34,36 +49,45 @@ export default function Categorias() {
     establecerCategoriaEditando,
   ] = useState(null)
 
-  const [formulario, establecerFormulario] = useState(
-    FORMULARIO_INICIAL,
-  )
+  const [
+    formulario,
+    establecerFormulario,
+  ] = useState(FORMULARIO_INICIAL)
 
   const [
     erroresFormulario,
     establecerErroresFormulario,
   ] = useState({})
 
-  const [guardando, establecerGuardando] = useState(false)
+  const [
+    guardando,
+    establecerGuardando,
+  ] = useState(false)
 
   const [
     categoriaEliminando,
     establecerCategoriaEliminando,
   ] = useState(null)
 
-  const [eliminando, establecerEliminando] =
-    useState(false)
+  const [
+    eliminando,
+    establecerEliminando,
+  ] = useState(false)
 
   /**
-   * Consulta las categorías de Laravel.
+   * Consulta las categorías almacenadas.
    */
   const cargarCategorias = useCallback(async () => {
     establecerCargando(true)
     establecerError('')
 
     try {
-      const respuesta = await apiCategorias.listar()
+      const respuesta =
+        await apiCategorias.listar()
 
-      establecerCategorias(respuesta.data ?? [])
+      establecerCategorias(
+        respuesta.data ?? [],
+      )
     } catch (errorPeticion) {
       establecerError(errorPeticion.message)
     } finally {
@@ -71,17 +95,14 @@ export default function Categorias() {
     }
   }, [])
 
-  /**
-   * Carga las categorías al abrir la página.
-   */
   useEffect(() => {
     void cargarCategorias()
   }, [cargarCategorias])
 
   /**
-   * Abre el formulario para registrar.
+   * Abre el formulario vacío.
    */
-  function abrirFormularioNuevo() {
+  function abrirCreacion() {
     establecerCategoriaEditando(null)
     establecerFormulario(FORMULARIO_INICIAL)
     establecerErroresFormulario({})
@@ -91,14 +112,15 @@ export default function Categorias() {
   }
 
   /**
-   * Abre el formulario para editar.
+   * Abre el formulario con los datos seleccionados.
    */
-  function abrirFormularioEditar(categoria) {
+  function abrirEdicion(categoria) {
     establecerCategoriaEditando(categoria)
 
     establecerFormulario({
       nombre: categoria.nombre,
-      descripcion: categoria.descripcion ?? '',
+      descripcion:
+        categoria.descripcion ?? '',
       activo: categoria.activo,
     })
 
@@ -109,7 +131,7 @@ export default function Categorias() {
   }
 
   /**
-   * Cierra el formulario.
+   * Cierra y limpia el formulario.
    */
   function cerrarFormulario() {
     if (guardando) {
@@ -136,7 +158,6 @@ export default function Categorias() {
 
     establecerFormulario((actual) => ({
       ...actual,
-
       [name]: type === 'checkbox'
         ? checked
         : value,
@@ -146,13 +167,6 @@ export default function Categorias() {
       ...actuales,
       [name]: undefined,
     }))
-  }
-
-  /**
-   * Obtiene el primer error de un campo.
-   */
-  function obtenerError(campo) {
-    return erroresFormulario[campo]?.[0] ?? ''
   }
 
   /**
@@ -168,10 +182,8 @@ export default function Categorias() {
 
     const datos = {
       nombre: formulario.nombre.trim(),
-
       descripcion:
         formulario.descripcion.trim() || null,
-
       activo: formulario.activo,
     }
 
@@ -185,10 +197,6 @@ export default function Categorias() {
 
       establecerMensaje(respuesta.mensaje)
 
-      /*
-       * Cierra y limpia el formulario
-       * después de guardar correctamente.
-       */
       establecerMostrandoFormulario(false)
       establecerCategoriaEditando(null)
       establecerFormulario(FORMULARIO_INICIAL)
@@ -207,27 +215,6 @@ export default function Categorias() {
   }
 
   /**
-   * Abre la confirmación de eliminación.
-   */
-  function confirmarEliminacion(categoria) {
-    establecerCategoriaEliminando(categoria)
-    establecerError('')
-    establecerMensaje('')
-  }
-
-  /**
-   * Cancela la eliminación.
-   */
-  function cancelarEliminacion() {
-    if (eliminando) {
-      return
-    }
-
-    establecerCategoriaEliminando(null)
-    establecerError('')
-  }
-
-  /**
    * Elimina la categoría seleccionada.
    */
   async function eliminarCategoria() {
@@ -237,11 +224,13 @@ export default function Categorias() {
 
     establecerEliminando(true)
     establecerError('')
+    establecerMensaje('')
 
     try {
-      const respuesta = await apiCategorias.eliminar(
-        categoriaEliminando.id,
-      )
+      const respuesta =
+        await apiCategorias.eliminar(
+          categoriaEliminando.id,
+        )
 
       establecerMensaje(respuesta.mensaje)
       establecerCategoriaEliminando(null)
@@ -255,203 +244,65 @@ export default function Categorias() {
   }
 
   return (
-    <main className="categorias-pagina">
+    <section className="categorias-vista">
       <header className="categorias-encabezado">
         <div>
-          <p className="categorias-marca">
-            Altamora Café
-          </p>
-
-          <h1>Categorías de productos</h1>
+          <h1>Categorías</h1>
 
           <p>
-            Organiza los productos del catálogo
-            mediante categorías.
+            Organiza los productos disponibles
+            en la cafetería.
           </p>
         </div>
 
-        <div className="categorias-acciones">
-          <button
-            type="button"
-            className="categorias-boton-principal"
-            onClick={abrirFormularioNuevo}
-          >
-            Nueva categoría
-          </button>
-
-          <button
-            type="button"
-            className="categorias-boton-secundario"
-            onClick={() => navegar('/panel')}
-          >
-            Regresar al panel
-          </button>
-        </div>
+        <Button
+          type="button"
+          className="categorias-boton-principal"
+          onClick={abrirCreacion}
+        >
+          Nueva categoría
+        </Button>
       </header>
 
+      <Card className="categorias-resumen">
+        <Card.Body>
+          <small>Categorías registradas</small>
+
+          <strong>{categorias.length}</strong>
+        </Card.Body>
+      </Card>
+
       {mensaje && (
-        <div
-          className={
-            'categorias-alerta categorias-exito'
-          }
-        >
+        <Alert variant="success">
           {mensaje}
-        </div>
+        </Alert>
       )}
 
       {error &&
         !mostrandoFormulario &&
         !categoriaEliminando && (
-          <div
-            className={
-              'categorias-alerta categorias-error'
-            }
-          >
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
-      {mostrandoFormulario && (
-        <section className="categorias-formulario-panel">
-          <div className="categorias-formulario-titulo">
-            <div>
-              <p className="categorias-marca">
-                Gestión de categorías
-              </p>
-
-              <h2>
-                {categoriaEditando
-                  ? 'Editar categoría'
-                  : 'Registrar categoría'}
-              </h2>
-            </div>
-
-            <button
-              type="button"
-              className="categorias-cerrar"
-              onClick={cerrarFormulario}
-              disabled={guardando}
-              aria-label="Cerrar formulario"
-            >
-              ×
-            </button>
-          </div>
-
-          <form
-            className="categorias-formulario"
-            onSubmit={guardarCategoria}
-          >
-            {error && (
-              <div
-                className={
-                  'categorias-alerta categorias-error'
-                }
-              >
-                {error}
-              </div>
-            )}
-
-            <div className="categorias-campo">
-              <label htmlFor="nombre">
-                Nombre
-              </label>
-
-              <input
-                id="nombre"
-                name="nombre"
-                type="text"
-                value={formulario.nombre}
-                onChange={manejarCampo}
-                placeholder="Ejemplo: Bebidas calientes"
-              />
-
-              {obtenerError('nombre') && (
-                <small className="categorias-error-campo">
-                  {obtenerError('nombre')}
-                </small>
-              )}
-            </div>
-
-            <div className="categorias-campo">
-              <label htmlFor="descripcion">
-                Descripción
-              </label>
-
-              <textarea
-                id="descripcion"
-                name="descripcion"
-                value={formulario.descripcion}
-                onChange={manejarCampo}
-                placeholder="Describe brevemente la categoría"
-                rows="4"
-              />
-
-              {obtenerError('descripcion') && (
-                <small className="categorias-error-campo">
-                  {obtenerError('descripcion')}
-                </small>
-              )}
-            </div>
-
-            <label className="categorias-casilla">
-              <input
-                name="activo"
-                type="checkbox"
-                checked={formulario.activo}
-                onChange={manejarCampo}
-              />
-
-              Categoría activa
-            </label>
-
-            {obtenerError('activo') && (
-              <small className="categorias-error-campo">
-                {obtenerError('activo')}
-              </small>
-            )}
-
-            <div className="categorias-formulario-acciones">
-              <button
-                type="button"
-                className="categorias-boton-secundario"
-                onClick={cerrarFormulario}
-                disabled={guardando}
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="submit"
-                className="categorias-boton-principal"
-                disabled={guardando}
-              >
-                {guardando
-                  ? 'Guardando...'
-                  : categoriaEditando
-                    ? 'Guardar cambios'
-                    : 'Registrar categoría'}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="categorias-contenedor">
+      <Card className="categorias-tabla-tarjeta">
         {cargando ? (
-          <div className="categorias-vacio">
-            <p>Cargando categorías...</p>
-          </div>
-        ) : categorias.length === 0 ? (
-          <div className="categorias-vacio">
-            <h2>No hay categorías registradas</h2>
+          <Card.Body className="categorias-estado">
+            <Spinner animation="border" />
 
-            <p>
-              Registra la primera categoría
-              para comenzar a organizar productos.
-            </p>
-          </div>
+            <span>Cargando categorías...</span>
+          </Card.Body>
+        ) : categorias.length === 0 ? (
+          <Card.Body className="categorias-estado">
+            No hay categorías registradas.
+          </Card.Body>
         ) : (
-          <table className="categorias-tabla">
+          <Table
+            responsive
+            hover
+            className="mb-0 align-middle"
+          >
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -469,7 +320,7 @@ export default function Categorias() {
                       {categoria.nombre}
                     </strong>
 
-                    <small>
+                    <small className="d-block text-muted">
                       {categoria.slug}
                     </small>
                   </td>
@@ -480,104 +331,88 @@ export default function Categorias() {
                   </td>
 
                   <td>
-                    <span
-                      className={
+                    <Badge
+                      bg={
                         categoria.activo
-                          ? 'categorias-estado-activo'
-                          : 'categorias-estado-inactivo'
+                          ? 'success'
+                          : 'secondary'
                       }
                     >
                       {categoria.activo
                         ? 'Activa'
                         : 'Inactiva'}
-                    </span>
+                    </Badge>
                   </td>
 
                   <td>
-                    <div className="categorias-botones-tabla">
-                      <button
+                    <div className="d-flex gap-2">
+                      <Button
                         type="button"
-                        className="categorias-boton-editar"
-                        onClick={() => {
-                          abrirFormularioEditar(
-                            categoria,
-                          )
-                        }}
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() =>
+                          abrirEdicion(categoria)
+                        }
                       >
                         Editar
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
-                        className="categorias-boton-eliminar"
+                        size="sm"
+                        variant="outline-danger"
                         onClick={() => {
-                          confirmarEliminacion(
+                          establecerCategoriaEliminando(
                             categoria,
                           )
+
+                          establecerError('')
+                          establecerMensaje('')
                         }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
-      </section>
+      </Card>
 
-      {categoriaEliminando && (
-        <section className="categorias-confirmacion">
-          <p className="categorias-marca">
-            Confirmar eliminación
-          </p>
+      <FormularioCategoria
+        mostrar={mostrandoFormulario}
+        categoriaEditando={categoriaEditando}
+        formulario={formulario}
+        errores={erroresFormulario}
+        error={
+          mostrandoFormulario
+            ? error
+            : ''
+        }
+        guardando={guardando}
+        alCambiar={manejarCampo}
+        alGuardar={guardarCategoria}
+        alCerrar={cerrarFormulario}
+      />
 
-          <h2>¿Eliminar esta categoría?</h2>
-
-          <p>
-            La categoría{' '}
-
-            <strong>
-              {categoriaEliminando.nombre}
-            </strong>{' '}
-
-            será eliminada del sistema.
-          </p>
-
-          {error && (
-            <div
-              className={
-                'categorias-alerta categorias-error'
-              }
-            >
-              {error}
-            </div>
-          )}
-
-          <div className="categorias-formulario-acciones">
-            <button
-              type="button"
-              className="categorias-boton-secundario"
-              onClick={cancelarEliminacion}
-              disabled={eliminando}
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="button"
-              className="categorias-boton-confirmar"
-              onClick={eliminarCategoria}
-              disabled={eliminando}
-            >
-              {eliminando
-                ? 'Eliminando...'
-                : 'Sí, eliminar'}
-            </button>
-          </div>
-        </section>
-      )}
-    </main>
+      <ConfirmarCategoria
+        categoria={categoriaEliminando}
+        error={
+          categoriaEliminando
+            ? error
+            : ''
+        }
+        eliminando={eliminando}
+        alConfirmar={eliminarCategoria}
+        alCerrar={() => {
+          if (!eliminando) {
+            establecerCategoriaEliminando(null)
+            establecerError('')
+          }
+        }}
+      />
+    </section>
   )
 }

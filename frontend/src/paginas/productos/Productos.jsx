@@ -3,7 +3,16 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { useNavigate } from 'react-router'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Spinner,
+  Table,
+} from 'react-bootstrap'
+import FormularioProducto from '../../components/productos/FormularioProducto.jsx'
+import ConfirmarProducto from '../../components/productos/ConfirmarProducto.jsx'
 import { apiCategorias } from '../../servicios/categorias.js'
 import { apiProductos } from '../../servicios/productos.js'
 import './productos.css'
@@ -18,34 +27,74 @@ const FORMULARIO_INICIAL = {
 }
 
 /**
- * Pantalla para administrar productos.
+ * Convierte el precio al formato de México.
+ */
+function mostrarPrecio(precio) {
+  return Number(precio ?? 0).toLocaleString(
+    'es-MX',
+    {
+      style: 'currency',
+      currency: 'MXN',
+    },
+  )
+}
+
+/**
+ * Administración de productos de la cafetería.
  */
 export default function Productos() {
-  const navegar = useNavigate()
+  const [
+    productos,
+    establecerProductos,
+  ] = useState([])
 
-  const [productos, establecerProductos] = useState([])
-  const [categorias, establecerCategorias] = useState([])
-  const [cargando, establecerCargando] = useState(true)
+  const [
+    categorias,
+    establecerCategorias,
+  ] = useState([])
+
+  const [
+    cargando,
+    establecerCargando,
+  ] = useState(true)
+
   const [error, establecerError] = useState('')
   const [mensaje, establecerMensaje] = useState('')
 
-  const [mostrandoFormulario, establecerMostrandoFormulario] =
-    useState(false)
+  const [
+    mostrandoFormulario,
+    establecerMostrandoFormulario,
+  ] = useState(false)
 
-  const [productoEditando, establecerProductoEditando] =
-    useState(null)
+  const [
+    productoEditando,
+    establecerProductoEditando,
+  ] = useState(null)
 
-  const [productoEliminando, establecerProductoEliminando] =
-    useState(null)
+  const [
+    productoEliminando,
+    establecerProductoEliminando,
+  ] = useState(null)
 
-  const [formulario, establecerFormulario] =
-    useState(FORMULARIO_INICIAL)
+  const [
+    formulario,
+    establecerFormulario,
+  ] = useState(FORMULARIO_INICIAL)
 
-  const [erroresFormulario, establecerErroresFormulario] =
-    useState({})
+  const [
+    erroresFormulario,
+    establecerErroresFormulario,
+  ] = useState({})
 
-  const [guardando, establecerGuardando] = useState(false)
-  const [eliminando, establecerEliminando] = useState(false)
+  const [
+    guardando,
+    establecerGuardando,
+  ] = useState(false)
+
+  const [
+    eliminando,
+    establecerEliminando,
+  ] = useState(false)
 
   /**
    * Consulta productos y categorías.
@@ -82,9 +131,9 @@ export default function Productos() {
   }, [cargarDatos])
 
   /**
-   * Abre el formulario para registrar.
+   * Abre el formulario vacío.
    */
-  function abrirFormularioNuevo() {
+  function abrirCreacion() {
     establecerProductoEditando(null)
     establecerFormulario(FORMULARIO_INICIAL)
     establecerErroresFormulario({})
@@ -94,15 +143,18 @@ export default function Productos() {
   }
 
   /**
-   * Abre el formulario para editar.
+   * Abre el formulario con los datos del producto.
    */
-  function abrirFormularioEditar(producto) {
+  function abrirEdicion(producto) {
     establecerProductoEditando(producto)
 
     establecerFormulario({
-      categoria_id: String(producto.categoria_id),
+      categoria_id: String(
+        producto.categoria_id,
+      ),
       nombre: producto.nombre,
-      descripcion: producto.descripcion ?? '',
+      descripcion:
+        producto.descripcion ?? '',
       precio: producto.precio,
       imagen: producto.imagen ?? '',
       activo: producto.activo,
@@ -130,7 +182,7 @@ export default function Productos() {
   }
 
   /**
-   * Actualiza los campos del formulario.
+   * Actualiza un campo del formulario.
    */
   function manejarCampo(evento) {
     const {
@@ -154,13 +206,6 @@ export default function Productos() {
   }
 
   /**
-   * Obtiene el primer error de validación.
-   */
-  function obtenerError(campo) {
-    return erroresFormulario[campo]?.[0] ?? ''
-  }
-
-  /**
    * Registra o actualiza un producto.
    */
   async function guardarProducto(evento) {
@@ -172,12 +217,24 @@ export default function Productos() {
     establecerErroresFormulario({})
 
     const datos = {
-      categoria_id: Number(formulario.categoria_id),
+      categoria_id:
+        formulario.categoria_id === ''
+          ? null
+          : Number(formulario.categoria_id),
+
       nombre: formulario.nombre.trim(),
+
       descripcion:
         formulario.descripcion.trim() || null,
-      precio: Number(formulario.precio),
-      imagen: formulario.imagen.trim() || null,
+
+      precio:
+        formulario.precio === ''
+          ? null
+          : Number(formulario.precio),
+
+      imagen:
+        formulario.imagen.trim() || null,
+
       activo: formulario.activo,
     }
 
@@ -190,9 +247,11 @@ export default function Productos() {
         : await apiProductos.crear(datos)
 
       establecerMensaje(respuesta.mensaje)
+
       establecerMostrandoFormulario(false)
       establecerProductoEditando(null)
       establecerFormulario(FORMULARIO_INICIAL)
+      establecerErroresFormulario({})
 
       await cargarDatos()
     } catch (errorPeticion) {
@@ -216,11 +275,13 @@ export default function Productos() {
 
     establecerEliminando(true)
     establecerError('')
+    establecerMensaje('')
 
     try {
-      const respuesta = await apiProductos.eliminar(
-        productoEliminando.id,
-      )
+      const respuesta =
+        await apiProductos.eliminar(
+          productoEliminando.id,
+        )
 
       establecerMensaje(respuesta.mensaje)
       establecerProductoEliminando(null)
@@ -234,231 +295,65 @@ export default function Productos() {
   }
 
   return (
-    <main className="productos-pagina">
+    <section className="productos-vista">
       <header className="productos-encabezado">
         <div>
-          <p className="productos-marca">
-            Altamora Café
-          </p>
-
-          <h1>Administración de productos</h1>
+          <h1>Productos</h1>
 
           <p>
-            Registra los productos disponibles
+            Administra el catálogo disponible
             en la cafetería.
           </p>
         </div>
 
-        <div className="productos-acciones">
-          <button
-            type="button"
-            className="productos-boton-principal"
-            onClick={abrirFormularioNuevo}
-          >
-            Nuevo producto
-          </button>
-
-          <button
-            type="button"
-            className="productos-boton-secundario"
-            onClick={() => navegar('/panel')}
-          >
-            Regresar al panel
-          </button>
-        </div>
+        <Button
+          type="button"
+          className="productos-boton-principal"
+          onClick={abrirCreacion}
+        >
+          Nuevo producto
+        </Button>
       </header>
 
+      <Card className="productos-resumen">
+        <Card.Body>
+          <small>Productos registrados</small>
+
+          <strong>{productos.length}</strong>
+        </Card.Body>
+      </Card>
+
       {mensaje && (
-        <div className="productos-alerta productos-exito">
+        <Alert variant="success">
           {mensaje}
-        </div>
+        </Alert>
       )}
 
       {error &&
         !mostrandoFormulario &&
         !productoEliminando && (
-          <div className="productos-alerta productos-error">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
-      {mostrandoFormulario && (
-        <section className="productos-formulario-panel">
-          <h2>
-            {productoEditando
-              ? 'Editar producto'
-              : 'Registrar producto'}
-          </h2>
-
-          <form
-            className="productos-formulario"
-            onSubmit={guardarProducto}
-          >
-            {error && (
-              <div className="productos-alerta productos-error">
-                {error}
-              </div>
-            )}
-
-            <div className="productos-campo">
-              <label htmlFor="categoria_id">
-                Categoría
-              </label>
-
-              <select
-                id="categoria_id"
-                name="categoria_id"
-                value={formulario.categoria_id}
-                onChange={manejarCampo}
-              >
-                <option value="">
-                  Selecciona una categoría
-                </option>
-
-                {categorias.map((categoria) => (
-                  <option
-                    key={categoria.id}
-                    value={categoria.id}
-                  >
-                    {categoria.nombre}
-                  </option>
-                ))}
-              </select>
-
-              {obtenerError('categoria_id') && (
-                <small className="productos-error-campo">
-                  {obtenerError('categoria_id')}
-                </small>
-              )}
-            </div>
-
-            <div className="productos-campo">
-              <label htmlFor="nombre">
-                Nombre
-              </label>
-
-              <input
-                id="nombre"
-                name="nombre"
-                type="text"
-                value={formulario.nombre}
-                onChange={manejarCampo}
-                placeholder="Ejemplo: Capuchino"
-              />
-
-              {obtenerError('nombre') && (
-                <small className="productos-error-campo">
-                  {obtenerError('nombre')}
-                </small>
-              )}
-            </div>
-
-            <div className="productos-campo">
-              <label htmlFor="descripcion">
-                Descripción
-              </label>
-
-              <textarea
-                id="descripcion"
-                name="descripcion"
-                value={formulario.descripcion}
-                onChange={manejarCampo}
-                rows="3"
-              />
-            </div>
-
-            <div className="productos-campo">
-              <label htmlFor="precio">
-                Precio
-              </label>
-
-              <input
-                id="precio"
-                name="precio"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formulario.precio}
-                onChange={manejarCampo}
-                placeholder="65.00"
-              />
-
-              {obtenerError('precio') && (
-                <small className="productos-error-campo">
-                  {obtenerError('precio')}
-                </small>
-              )}
-            </div>
-
-            <div className="productos-campo">
-              <label htmlFor="imagen">
-                URL de imagen
-              </label>
-
-              <input
-                id="imagen"
-                name="imagen"
-                type="url"
-                value={formulario.imagen}
-                onChange={manejarCampo}
-                placeholder="https://..."
-              />
-
-              {obtenerError('imagen') && (
-                <small className="productos-error-campo">
-                  {obtenerError('imagen')}
-                </small>
-              )}
-            </div>
-
-            <label className="productos-casilla">
-              <input
-                name="activo"
-                type="checkbox"
-                checked={formulario.activo}
-                onChange={manejarCampo}
-              />
-
-              Producto activo
-            </label>
-
-            <div className="productos-formulario-acciones">
-              <button
-                type="button"
-                className="productos-boton-secundario"
-                onClick={cerrarFormulario}
-                disabled={guardando}
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="submit"
-                className="productos-boton-principal"
-                disabled={guardando}
-              >
-                {guardando
-                  ? 'Guardando...'
-                  : productoEditando
-                    ? 'Guardar cambios'
-                    : 'Registrar producto'}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="productos-contenedor">
+      <Card className="productos-tabla-tarjeta">
         {cargando ? (
-          <p className="productos-vacio">
-            Cargando productos...
-          </p>
+          <Card.Body className="productos-estado">
+            <Spinner animation="border" />
+
+            <span>Cargando productos...</span>
+          </Card.Body>
         ) : productos.length === 0 ? (
-          <p className="productos-vacio">
+          <Card.Body className="productos-estado">
             No hay productos registrados.
-          </p>
+          </Card.Body>
         ) : (
-          <table className="productos-tabla">
+          <Table
+            responsive
+            hover
+            className="mb-0 align-middle"
+          >
             <thead>
               <tr>
                 <th>Producto</th>
@@ -473,9 +368,11 @@ export default function Productos() {
               {productos.map((producto) => (
                 <tr key={producto.id}>
                   <td>
-                    <strong>{producto.nombre}</strong>
+                    <strong>
+                      {producto.nombre}
+                    </strong>
 
-                    <small>
+                    <small className="d-block text-muted">
                       {producto.descripcion ||
                         'Sin descripción'}
                     </small>
@@ -486,90 +383,94 @@ export default function Productos() {
                       'Sin categoría'}
                   </td>
 
-                  <td>
-                    ${Number(producto.precio).toFixed(2)}
+                  <td className="productos-precio">
+                    {mostrarPrecio(producto.precio)}
                   </td>
 
                   <td>
-                    {producto.activo
-                      ? 'Activo'
-                      : 'Inactivo'}
+                    <Badge
+                      bg={
+                        producto.activo
+                          ? 'success'
+                          : 'secondary'
+                      }
+                    >
+                      {producto.activo
+                        ? 'Activo'
+                        : 'Inactivo'}
+                    </Badge>
                   </td>
 
                   <td>
-                    <div className="productos-botones-tabla">
-                      <button
+                    <div className="d-flex gap-2">
+                      <Button
                         type="button"
+                        size="sm"
+                        variant="outline-primary"
                         onClick={() =>
-                          abrirFormularioEditar(producto)
+                          abrirEdicion(producto)
                         }
                       >
                         Editar
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
+                        variant="outline-danger"
                         onClick={() => {
                           establecerProductoEliminando(
                             producto,
                           )
-                          establecerMensaje('')
+
                           establecerError('')
+                          establecerMensaje('')
                         }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
-      </section>
+      </Card>
 
-      {productoEliminando && (
-        <section className="productos-confirmacion">
-          <h2>¿Eliminar producto?</h2>
+      <FormularioProducto
+        mostrar={mostrandoFormulario}
+        productoEditando={productoEditando}
+        categorias={categorias}
+        formulario={formulario}
+        errores={erroresFormulario}
+        error={
+          mostrandoFormulario
+            ? error
+            : ''
+        }
+        guardando={guardando}
+        alCambiar={manejarCampo}
+        alGuardar={guardarProducto}
+        alCerrar={cerrarFormulario}
+      />
 
-          <p>
-            Se eliminará{' '}
-            <strong>
-              {productoEliminando.nombre}
-            </strong>.
-          </p>
-
-          {error && (
-            <div className="productos-alerta productos-error">
-              {error}
-            </div>
-          )}
-
-          <div className="productos-formulario-acciones">
-            <button
-              type="button"
-              className="productos-boton-secundario"
-              onClick={() =>
-                establecerProductoEliminando(null)
-              }
-              disabled={eliminando}
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="button"
-              className="productos-boton-eliminar"
-              onClick={eliminarProducto}
-              disabled={eliminando}
-            >
-              {eliminando
-                ? 'Eliminando...'
-                : 'Sí, eliminar'}
-            </button>
-          </div>
-        </section>
-      )}
-    </main>
+      <ConfirmarProducto
+        producto={productoEliminando}
+        error={
+          productoEliminando
+            ? error
+            : ''
+        }
+        eliminando={eliminando}
+        alConfirmar={eliminarProducto}
+        alCerrar={() => {
+          if (!eliminando) {
+            establecerProductoEliminando(null)
+            establecerError('')
+          }
+        }}
+      />
+    </section>
   )
 }

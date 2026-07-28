@@ -4,12 +4,16 @@ import {
   Navigate,
   useNavigate,
 } from 'react-router'
+import {
+  Alert,
+  Button,
+  Form,
+  InputGroup,
+  Spinner,
+} from 'react-bootstrap'
+import DisenoAutenticacion from '../../components/autenticacion/DisenoAutenticacion.jsx'
 import { useAutenticacion } from '../../contextos/useAutenticacion.js'
-import './autenticacion.css'
 
-/*
- * Estado inicial del formulario de registro.
- */
 const FORMULARIO_INICIAL = {
   name: '',
   email: '',
@@ -18,7 +22,7 @@ const FORMULARIO_INICIAL = {
 }
 
 /**
- * Muestra el formulario para registrar una cuenta.
+ * Formulario público para crear una cuenta.
  */
 export default function Registro() {
   const {
@@ -28,41 +32,42 @@ export default function Registro() {
 
   const navegar = useNavigate()
 
-  // Información escrita en los campos.
   const [formulario, establecerFormulario] =
     useState(FORMULARIO_INICIAL)
 
-  // Errores específicos enviados por Laravel.
   const [errores, establecerErrores] = useState({})
 
-  // Error general de conexión o procesamiento.
-  const [mensajeError, establecerMensajeError] =
-    useState('')
+  const [
+    mensajeError,
+    establecerMensajeError,
+  ] = useState('')
 
-  // Evita enviar el formulario varias veces.
-  const [procesando, establecerProcesando] =
-    useState(false)
+  const [
+    procesando,
+    establecerProcesando,
+  ] = useState(false)
 
-  // Permite mostrar u ocultar ambas contraseñas.
   const [
     mostrarContrasenas,
     establecerMostrarContrasenas,
   ] = useState(false)
 
   /**
-   * Actualiza el campo modificado.
+   * Actualiza el campo escrito y limpia su error.
    */
   function manejarCambio(evento) {
-    const { name, value } = evento.target
+    const {
+      name,
+      value,
+    } = evento.target
 
-    establecerFormulario((formularioActual) => ({
-      ...formularioActual,
+    establecerFormulario((actual) => ({
+      ...actual,
       [name]: value,
     }))
 
-    // Elimina el error cuando el usuario corrige el campo.
-    establecerErrores((erroresActuales) => ({
-      ...erroresActuales,
+    establecerErrores((actuales) => ({
+      ...actuales,
       [name]: undefined,
     }))
 
@@ -70,7 +75,7 @@ export default function Registro() {
   }
 
   /**
-   * Envía el registro a Laravel.
+   * Envía la información a la API de Laravel.
    */
   async function manejarEnvio(evento) {
     evento.preventDefault()
@@ -89,14 +94,13 @@ export default function Registro() {
       })
 
       /*
-       * El backend devuelve un token al registrar la cuenta,
-       * por lo que la sesión inicia automáticamente.
+       * Laravel devuelve el token al registrar,
+       * por lo que la sesión comienza automáticamente.
        */
       navegar('/panel', {
         replace: true,
       })
     } catch (error) {
-      // Laravel responde con 422 cuando falla la validación.
       if (error.estado === 422) {
         establecerErrores(
           error.datos?.errors ?? {},
@@ -107,7 +111,7 @@ export default function Registro() {
 
       establecerMensajeError(
         error.message ??
-          'No fue posible registrar la cuenta.',
+          'No fue posible crear la cuenta.',
       )
     } finally {
       establecerProcesando(false)
@@ -115,323 +119,167 @@ export default function Registro() {
   }
 
   /*
-   * Una persona autenticada no necesita registrar
-   * otra cuenta desde esta pantalla.
+   * Una persona autenticada no necesita
+   * abrir nuevamente el registro público.
    */
   if (estaAutenticado) {
     return <Navigate to="/panel" replace />
   }
 
   return (
-    <main className="autenticacion-pagina">
-      <section className="autenticacion-presentacion">
-        <div className="autenticacion-marca">
-          <span
-            className="autenticacion-logotipo"
-            aria-hidden="true"
-          >
-            A
-          </span>
+    <DisenoAutenticacion
+      titulo="Crear cuenta"
+      descripcion="Registra tus datos para acceder a Café Altamora."
+    >
+      {mensajeError && (
+        <Alert variant="danger">
+          {mensajeError}
+        </Alert>
+      )}
 
-          <div>
-            <p className="autenticacion-marca-superior">
-              Cafetería
-            </p>
+      <Form
+        className="altamora-auth-formulario"
+        onSubmit={manejarEnvio}
+        noValidate
+      >
+        <Form.Group controlId="name">
+          <Form.Label>
+            Nombre completo
+          </Form.Label>
 
-            <h1>Altamora</h1>
-          </div>
-        </div>
+          <Form.Control
+            name="name"
+            type="text"
+            value={formulario.name}
+            onChange={manejarCambio}
+            placeholder="Escribe tu nombre"
+            autoComplete="name"
+            isInvalid={Boolean(errores.name)}
+            disabled={procesando}
+          />
 
-        <div className="autenticacion-presentacion-contenido">
-          <p className="autenticacion-etiqueta">
-            Sistema integral de gestión
-          </p>
+          <Form.Control.Feedback type="invalid">
+            {errores.name?.[0]}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-          <h2>
-            Comienza a gestionar Altamora de manera
-            segura y organizada.
-          </h2>
+        <Form.Group controlId="email">
+          <Form.Label>
+            Correo electrónico
+          </Form.Label>
 
-          <p>
-            Crea tu cuenta para acceder a las herramientas
-            de administración, inventario, productos,
-            pedidos y operación de la cafetería.
-          </p>
+          <Form.Control
+            name="email"
+            type="email"
+            value={formulario.email}
+            onChange={manejarCambio}
+            placeholder="usuario@altamora.com"
+            autoComplete="email"
+            isInvalid={Boolean(errores.email)}
+            disabled={procesando}
+          />
 
-          <div className="autenticacion-beneficios">
-            <article>
-              <strong>Cuenta protegida</strong>
+          <Form.Control.Feedback type="invalid">
+            {errores.email?.[0]}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-              <span>
-                Contraseñas cifradas y autenticación mediante
-                Laravel Sanctum.
-              </span>
-            </article>
+        <Form.Group controlId="password">
+          <Form.Label>
+            Contraseña
+          </Form.Label>
 
-            <article>
-              <strong>Acceso centralizado</strong>
+          <InputGroup>
+            <Form.Control
+              name="password"
+              type={
+                mostrarContrasenas
+                  ? 'text'
+                  : 'password'
+              }
+              value={formulario.password}
+              onChange={manejarCambio}
+              placeholder="Crea una contraseña"
+              autoComplete="new-password"
+              isInvalid={Boolean(errores.password)}
+              disabled={procesando}
+            />
 
-              <span>
-                Consulta las funciones autorizadas desde una
-                misma plataforma.
-              </span>
-            </article>
-          </div>
-        </div>
-
-        <p className="autenticacion-pie-presentacion">
-          Altamora Café · Calidad en cada proceso
-        </p>
-      </section>
-
-      <section className="autenticacion-formulario-seccion">
-        <div className="autenticacion-formulario-contenedor">
-          <header className="autenticacion-encabezado">
-            <p>Registro de usuario</p>
-
-            <h2>Crear una cuenta</h2>
-
-            <span>
-              Completa la información para acceder al sistema.
-            </span>
-          </header>
-
-          {mensajeError && (
-            <div
-              className="autenticacion-alerta autenticacion-alerta-error"
-              role="alert"
-            >
-              <span aria-hidden="true">!</span>
-
-              <p>{mensajeError}</p>
-            </div>
-          )}
-
-          <form
-            className="autenticacion-formulario"
-            onSubmit={manejarEnvio}
-            noValidate
-          >
-            <div className="autenticacion-campo">
-              <label htmlFor="name">
-                Nombre completo
-              </label>
-
-              <div
-                className={`autenticacion-entrada ${
-                  errores.name
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">◆</span>
-
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formulario.name}
-                  onChange={manejarCambio}
-                  placeholder="Escribe tu nombre"
-                  autoComplete="name"
-                  aria-invalid={Boolean(errores.name)}
-                  aria-describedby={
-                    errores.name
-                      ? 'error-name'
-                      : undefined
-                  }
-                  disabled={procesando}
-                />
-              </div>
-
-              {errores.name && (
-                <p
-                  id="error-name"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.name[0]}
-                </p>
-              )}
-            </div>
-
-            <div className="autenticacion-campo">
-              <label htmlFor="email">
-                Correo electrónico
-              </label>
-
-              <div
-                className={`autenticacion-entrada ${
-                  errores.email
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">@</span>
-
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formulario.email}
-                  onChange={manejarCambio}
-                  placeholder="usuario@altamora.com"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errores.email)}
-                  aria-describedby={
-                    errores.email
-                      ? 'error-email'
-                      : undefined
-                  }
-                  disabled={procesando}
-                />
-              </div>
-
-              {errores.email && (
-                <p
-                  id="error-email"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.email[0]}
-                </p>
-              )}
-            </div>
-
-            <div className="autenticacion-campo">
-              <label htmlFor="password">
-                Contraseña
-              </label>
-
-              <div
-                className={`autenticacion-entrada ${
-                  errores.password
-                    ? 'autenticacion-entrada-error'
-                    : ''
-                }`}
-              >
-                <span aria-hidden="true">●</span>
-
-                <input
-                  id="password"
-                  name="password"
-                  type={
-                    mostrarContrasenas
-                      ? 'text'
-                      : 'password'
-                  }
-                  value={formulario.password}
-                  onChange={manejarCambio}
-                  placeholder="Crea una contraseña segura"
-                  autoComplete="new-password"
-                  aria-invalid={Boolean(
-                    errores.password,
-                  )}
-                  aria-describedby={
-                    errores.password
-                      ? 'error-password'
-                      : 'ayuda-password'
-                  }
-                  disabled={procesando}
-                />
-
-                <button
-                  type="button"
-                  className="autenticacion-mostrar"
-                  onClick={() =>
-                    establecerMostrarContrasenas(
-                      (estadoActual) =>
-                        !estadoActual,
-                    )
-                  }
-                  disabled={procesando}
-                >
-                  {mostrarContrasenas
-                    ? 'Ocultar'
-                    : 'Mostrar'}
-                </button>
-              </div>
-
-              <p
-                id="ayuda-password"
-                className="autenticacion-ayuda-campo"
-              >
-                Mínimo 8 caracteres, mayúscula, minúscula,
-                número y carácter especial.
-              </p>
-
-              {errores.password && (
-                <p
-                  id="error-password"
-                  className="autenticacion-mensaje-campo"
-                >
-                  {errores.password[0]}
-                </p>
-              )}
-            </div>
-
-            <div className="autenticacion-campo">
-              <label htmlFor="password_confirmation">
-                Confirmar contraseña
-              </label>
-
-              <div className="autenticacion-entrada">
-                <span aria-hidden="true">●</span>
-
-                <input
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  type={
-                    mostrarContrasenas
-                      ? 'text'
-                      : 'password'
-                  }
-                  value={
-                    formulario.password_confirmation
-                  }
-                  onChange={manejarCambio}
-                  placeholder="Repite la contraseña"
-                  autoComplete="new-password"
-                  disabled={procesando}
-                />
-              </div>
-            </div>
-
-            <button
-              className="autenticacion-boton-principal"
-              type="submit"
+            <Button
+              type="button"
+              variant="outline-secondary"
+              onClick={() =>
+                establecerMostrarContrasenas(
+                  (actual) => !actual,
+                )
+              }
               disabled={procesando}
             >
-              {procesando && (
-                <span
-                  className="autenticacion-cargador"
-                  aria-hidden="true"
-                />
-              )}
+              {mostrarContrasenas
+                ? 'Ocultar'
+                : 'Mostrar'}
+            </Button>
 
-              {procesando
-                ? 'Creando cuenta...'
-                : 'Crear cuenta'}
-            </button>
-          </form>
+            <Form.Control.Feedback type="invalid">
+              {errores.password?.[0]}
+            </Form.Control.Feedback>
+          </InputGroup>
 
-          <div className="autenticacion-separador">
-            <span />
-            <p>Cuenta existente</p>
-            <span />
-          </div>
+          <Form.Text className="text-muted">
+            Usa mínimo 8 caracteres, mayúscula,
+            minúscula, número y símbolo.
+          </Form.Text>
+        </Form.Group>
 
-          <p className="autenticacion-enlace-registro">
-            ¿Ya tienes una cuenta?{' '}
-            <Link to="/inicio-sesion">
-              Iniciar sesión
-            </Link>
-          </p>
+        <Form.Group controlId="password_confirmation">
+          <Form.Label>
+            Confirmar contraseña
+          </Form.Label>
 
-          <footer className="autenticacion-pie-formulario">
-            <span aria-hidden="true">◆</span>
-            Conexión protegida y datos cifrados
-          </footer>
-        </div>
-      </section>
-    </main>
+          <Form.Control
+            name="password_confirmation"
+            type={
+              mostrarContrasenas
+                ? 'text'
+                : 'password'
+            }
+            value={
+              formulario.password_confirmation
+            }
+            onChange={manejarCambio}
+            placeholder="Repite tu contraseña"
+            autoComplete="new-password"
+            disabled={procesando}
+          />
+        </Form.Group>
+
+        <Button
+          type="submit"
+          className="altamora-auth-boton"
+          disabled={procesando}
+        >
+          {procesando && (
+            <Spinner
+              size="sm"
+              className="me-2"
+              aria-hidden="true"
+            />
+          )}
+
+          {procesando
+            ? 'Creando cuenta...'
+            : 'Guardar'}
+        </Button>
+
+        <Link
+          to="/inicio-sesion"
+          className={
+            'btn altamora-auth-boton-secundario'
+          }
+        >
+          Iniciar sesión
+        </Link>
+      </Form>
+    </DisenoAutenticacion>
   )
 }

@@ -1,0 +1,337 @@
+:root {
+  --panel-cafe: #8b4f24;
+  --panel-cafe-oscuro: #633515;
+  --panel-crema: #f7f0e8;
+  --panel-borde: #eaded3;
+  --panel-texto: #382820;
+}
+
+.altamora-panel {
+  display: flex;
+  min-height: 100vh;
+  color: var(--panel-texto);
+  background: var(--panel-crema);
+}
+
+.altamora-menu {
+  position: sticky;
+  top: 0;
+  width: 245px;
+  height: 100vh;
+  flex-direction: column;
+  padding: 24px 18px;
+  color: #ffffff;
+  background: var(--panel-cafe);
+}
+
+.altamora-menu-logo {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.altamora-menu-logo img {
+  width: 115px;
+  height: 85px;
+  border-radius: 14px;
+  object-fit: contain;
+  background: #fffaf4;
+}
+
+.altamora-menu-logo strong {
+  font-family: Georgia, serif;
+  font-size: 18px;
+}
+
+.altamora-menu-opciones {
+  display: grid;
+  gap: 6px;
+}
+
+.altamora-menu-enlace {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.altamora-menu-enlace:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 12%);
+}
+
+.altamora-menu-enlace.activo {
+  color: var(--panel-cafe-oscuro);
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.altamora-menu-usuario {
+  display: grid;
+  gap: 3px;
+  margin-top: auto;
+  padding: 16px 4px;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+}
+
+.altamora-menu-usuario small {
+  color: rgb(255 255 255 / 72%);
+}
+
+.altamora-menu-usuario span {
+  font-size: 13px;
+}
+
+.altamora-menu-cerrar {
+  width: 100%;
+  border-color: #ffffff;
+  color: var(--panel-cafe);
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.altamora-menu-cerrar:hover {
+  border-color: #f2dfcd;
+  color: var(--panel-cafe-oscuro);
+  background: #f2dfcd;
+}
+
+.altamora-panel-principal {
+  min-width: 0;
+  flex: 1;
+}
+
+.altamora-encabezado {
+  display: flex;
+  min-height: 82px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  color: #ffffff;
+  background: var(--panel-cafe);
+}
+
+.altamora-encabezado div {
+  display: grid;
+}
+
+.altamora-encabezado small {
+  color: rgb(255 255 255 / 75%);
+}
+
+.altamora-encabezado strong {
+  font-family: Georgia, serif;
+  font-size: 18px;
+}
+
+.altamora-encabezado-rol {
+  margin-left: auto;
+  padding: 7px 13px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.altamora-boton-menu {
+  border: 1px solid rgb(255 255 255 / 35%);
+  color: #ffffff;
+  background: transparent;
+}
+
+.altamora-panel-contenido {
+  min-height: calc(100vh - 82px);
+  padding: 28px;
+}
+
+.altamora-menu-movil .offcanvas-body {
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  background: var(--panel-cafe);
+}
+
+.altamora-menu-movil .altamora-menu-logo {
+  margin-top: 10px;
+}
+
+@media (max-width: 767.98px) {
+  .altamora-encabezado {
+    min-height: 72px;
+    padding: 12px 16px;
+  }
+
+  .altamora-encabezado-rol {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .altamora-panel-contenido {
+    min-height: calc(100vh - 72px);
+    padding: 18px 12px;
+  }
+  /* Panel principal del sistema. */
+
+.altamora-dashboard {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+}
+
+.altamora-dashboard-presentacion {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.altamora-dashboard-presentacion h1 {
+  margin: 12px 0 8px;
+  font-family: Georgia, serif;
+  font-size: clamp(30px, 5vw, 43px);
+  color: #382820;
+}
+
+.altamora-dashboard-presentacion p {
+  margin: 0;
+  color: #786b63;
+}
+
+.altamora-dashboard-etiqueta {
+  padding: 8px 12px;
+  border: 1px solid var(--panel-borde);
+}
+
+.altamora-dashboard-rol {
+  padding: 9px 14px;
+  background: var(--panel-cafe);
+}
+
+.altamora-dashboard-usuario {
+  margin-bottom: 30px;
+  border: 1px solid var(--panel-borde);
+  box-shadow: 0 10px 28px rgb(70 43 27 / 7%);
+}
+
+.altamora-dashboard-usuario small,
+.altamora-dashboard-usuario strong {
+  display: block;
+}
+
+.altamora-dashboard-usuario small {
+  margin-bottom: 4px;
+  color: #8b7d74;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.altamora-dashboard-usuario strong {
+  color: #493329;
+  overflow-wrap: anywhere;
+}
+
+.altamora-dashboard-seccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.altamora-dashboard-seccion h2 {
+  margin: 0 0 4px;
+  font-family: Georgia, serif;
+  font-size: 24px;
+}
+
+.altamora-dashboard-seccion p {
+  margin: 0;
+  color: #81736b;
+}
+
+.altamora-dashboard-tarjeta {
+  border: 1px solid var(--panel-borde);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.altamora-dashboard-tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 32px rgb(70 43 27 / 10%);
+}
+
+.altamora-dashboard-tarjeta .card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+}
+
+.altamora-dashboard-icono {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 18px;
+  place-items: center;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  background: var(--panel-cafe);
+}
+
+.altamora-dashboard-tarjeta .card-title {
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.altamora-dashboard-tarjeta .card-text {
+  flex: 1;
+  color: #786b63;
+  line-height: 1.6;
+}
+
+.altamora-dashboard-boton {
+  align-self: flex-start;
+  border-color: var(--panel-cafe);
+  background: var(--panel-cafe);
+}
+
+.altamora-dashboard-boton:hover,
+.altamora-dashboard-boton:focus {
+  border-color: var(--panel-cafe-oscuro);
+  background: var(--panel-cafe-oscuro);
+}
+
+.altamora-dashboard-aviso {
+  margin-top: 30px;
+  border: 1px solid #decbb9;
+  background: #fffaf4;
+}
+
+.altamora-dashboard-aviso strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--panel-cafe-oscuro);
+}
+
+.altamora-dashboard-aviso p {
+  color: #75665d;
+}
+
+@media (max-width: 767.98px) {
+  .altamora-dashboard-presentacion {
+    flex-direction: column;
+  }
+
+  .altamora-dashboard-rol {
+    align-self: flex-start;
+  }
+}
+}

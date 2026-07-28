@@ -1,0 +1,160 @@
+:root {
+  --altamora-cafe: #a6531b;
+  --altamora-cafe-oscuro: #713712;
+  --altamora-crema: #f8f1e8;
+  --altamora-borde: #d8cec5;
+  --altamora-texto: #33251f;
+  --altamora-error: #a94442;
+}
+
+.altamora-auth {
+  min-height: 100vh;
+  color: var(--altamora-texto);
+  background: var(--altamora-crema);
+}
+
+.altamora-auth-imagen-contenedor {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #21140d;
+}
+
+.altamora-auth-imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.altamora-auth-sombra {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 38%),
+      rgb(0 0 0 / 5%)
+    );
+}
+
+.altamora-auth-nombre-sistema {
+  position: absolute;
+  top: 32px;
+  left: 38px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.altamora-auth-panel {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #ffffff;
+}
+
+.altamora-auth-contenido {
+  width: min(100%, 430px);
+}
+
+.altamora-auth-logo {
+  width: 175px;
+  max-height: 130px;
+  margin-bottom: 18px;
+  object-fit: contain;
+}
+
+.altamora-auth-titulo {
+  margin-bottom: 8px;
+  font-family: Georgia, serif;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.altamora-auth-descripcion {
+  margin: 0;
+  color: #766960;
+  font-size: 14px;
+}
+
+.altamora-auth-formulario {
+  display: grid;
+  gap: 18px;
+}
+
+.altamora-auth-formulario .form-label {
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.altamora-auth-formulario .form-control {
+  min-height: 48px;
+  border-color: var(--altamora-borde);
+}
+
+.altamora-auth-formulario .form-control:focus {
+  border-color: var(--altamora-cafe);
+  box-shadow: 0 0 0 3px rgb(166 83 27 / 15%);
+}
+
+.altamora-auth-boton {
+  min-height: 48px;
+  border-color: var(--altamora-cafe);
+  background: var(--altamora-cafe);
+  font-weight: 700;
+}
+
+.altamora-auth-boton:hover,
+.altamora-auth-boton:focus {
+  border-color: var(--altamora-cafe-oscuro);
+  background: var(--altamora-cafe-oscuro);
+}
+
+.altamora-auth-boton-secundario {
+  min-height: 48px;
+  border-color: var(--altamora-cafe);
+  color: var(--altamora-cafe);
+  font-weight: 700;
+}
+
+.altamora-auth-boton-secundario:hover {
+  border-color: var(--altamora-cafe);
+  color: #ffffff;
+  background: var(--altamora-cafe);
+}
+
+.altamora-auth-enlace {
+  color: var(--altamora-cafe);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.altamora-auth-enlace:hover {
+  color: var(--altamora-cafe-oscuro);
+  text-decoration: underline;
+}
+
+.altamora-auth-pie {
+  margin-top: 32px;
+  color: #887b72;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 991.98px) {
+  .altamora-auth-imagen-contenedor {
+    display: none;
+  }
+
+  .altamora-auth-panel {
+    padding: 32px 20px;
+  }
+}
