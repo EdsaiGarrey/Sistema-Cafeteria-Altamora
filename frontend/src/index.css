@@ -7,14 +7,56 @@
   text-rendering: optimizeLegibility;
 }
 
-/* Evita diferencias de tamaño por bordes y rellenos. */
+/* Mantiene tamaños consistentes. */
 * {
   box-sizing: border-box;
 }
 
-/* Elimina los márgenes predeterminados del navegador. */
+/* Elimina los márgenes del navegador. */
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  margin: 0;
+}
+
+/* Permite que React ocupe toda la pantalla. */
+#root {
+  min-height: 100vh;
+}
+
+/* Pantalla mostrada mientras se comprueba la sesión. */
+.pantalla-carga-sesion {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  color: #633515;
+  background: #f7f0e8;
+}
+
+.pantalla-carga-sesion p {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Indicador circular de carga. */
+.indicador-carga {
+  width: 42px;
+  height: 42px;
+  border: 4px solid #decbb9;
+  border-top-color: #8b4f24;
+  border-radius: 50%;
+  animation: girar-sesion 800ms linear infinite;
+}
+
+/* Animación del indicador de carga. */
+@keyframes girar-sesion {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
