@@ -31,6 +31,27 @@ class ProductoController extends Controller
     }
 
     /**
+     * Lista los productos activos disponibles
+     * para registrar pedidos.
+     */
+    public function disponibles(): AnonymousResourceCollection
+    {
+        $productos = Producto::with('categoria')
+            ->where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return ProductoResource::collection(
+            $productos
+        )->additional([
+            'correcto' => true,
+            'mensaje' =>
+                'Los productos disponibles fueron consultados correctamente.',
+        ]);
+    }
+
+
+    /**
      * Registra un producto.
      */
     public function store(

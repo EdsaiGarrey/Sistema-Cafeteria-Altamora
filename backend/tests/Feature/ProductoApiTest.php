@@ -45,6 +45,38 @@ class ProductoApiTest extends TestCase
             ->assertForbidden();
     }
 
+        /**
+     * Un empleado puede consultar productos activos
+     * para registrar pedidos.
+     */
+    public function test_empleado_puede_consultar_productos_disponibles(): void
+    {
+        $this->autenticar(
+            User::ROL_EMPLEADO
+        );
+
+        Producto::factory()->create([
+            'nombre' => 'Capuchino',
+            'activo' => true,
+        ]);
+
+        Producto::factory()->create([
+            'nombre' => 'Producto oculto',
+            'activo' => false,
+        ]);
+
+        $this->getJson(
+            '/api/productos-disponibles'
+        )
+            ->assertOk()
+            ->assertJsonPath(
+                'data.0.nombre',
+                'Capuchino'
+            )
+            ->assertJsonMissing([
+                'nombre' => 'Producto oculto',
+            ]);
+    }
     /**
      * Un gerente puede consultar productos.
      */

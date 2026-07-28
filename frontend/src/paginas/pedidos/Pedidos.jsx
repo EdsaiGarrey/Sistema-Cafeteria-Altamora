@@ -4,7 +4,9 @@ import {
   useState,
 } from 'react'
 import { useNavigate } from 'react-router'
+import SelectorProductosPedido from '../../components/pedidos/SelectorProductosPedido.jsx'
 import { apiPedidos } from '../../servicios/pedidos.js'
+import { apiProductos } from '../../servicios/productos.js'
 import './pedidos.css'
 
 const FILTROS_INICIALES = {
@@ -13,11 +15,19 @@ const FILTROS_INICIALES = {
   tipo_servicio: '',
 }
 
-const FORMULARIO_INICIAL = {
-  caja_id: '',
-  cliente_nombre: '',
-  tipo_servicio: 'local',
-  notas: '',
+function crearFormularioInicial() {
+  return {
+    caja_id: '',
+    cliente_nombre: '',
+    tipo_servicio: 'local',
+    notas: '',
+    productos: [
+      {
+        producto_id: '',
+        cantidad: 1,
+      },
+    ],
+  }
 }
 
 const ESTADOS = [
@@ -29,10 +39,10 @@ const ESTADOS = [
 ]
 
 /**
- * Convierte un estado técnico en un texto legible.
+ * Convierte el estado técnico en texto legible.
  */
 function mostrarEstado(estado) {
-  const estados = {
+  const nombres = {
     pendiente: 'Pendiente',
     confirmado: 'Confirmado',
     en_preparacion: 'En preparación',
@@ -41,7 +51,20 @@ function mostrarEstado(estado) {
     cancelado: 'Cancelado',
   }
 
-  return estados[estado] ?? estado
+  return nombres[estado] ?? estado
+}
+
+/**
+ * Convierte el tipo de servicio en texto legible.
+ */
+function mostrarServicio(servicio) {
+  const nombres = {
+    local: 'Consumo local',
+    llevar: 'Para llevar',
+    domicilio: 'Domicilio',
+  }
+
+  return nombres[servicio] ?? servicio
 }
 
 /**
@@ -65,6 +88,9 @@ export default function Pedidos() {
   const navegar = useNavigate()
 
   const [pedidos, establecerPedidos] = useState([])
+  const [productosDisponibles, establecerProductosDisponibles] =
+    useState([])
+
   const [meta, establecerMeta] = useState({
     current_page: 1,
     last_page: 1,
@@ -80,8 +106,24 @@ export default function Pedidos() {
     establecerFiltrosAplicados,
   ] = useState(FILTROS_INICIALES)
 
+  const [formulario, establecerFormulario] = useState(
+    crearFormularioInicial,
+  )
+
+  const [
+    erroresFormulario,
+    establecerErroresFormulario,
+  ] = useState({})
+
   const [pagina, establecerPagina] = useState(1)
   const [cargando, establecerCargando] = useState(true)
+
+  const [
+    cargandoProductos,
+    establecerCargandoProductos,
+  ] = useState(false)
+
+  const [guardando, establecerGuardando] = useState(false)
   const [error, establecerError] = useState('')
   const [mensaje, establecerMensaje] = useState('')
 
@@ -90,24 +132,13 @@ export default function Pedidos() {
     establecerMostrandoFormulario,
   ] = useState(false)
 
-  const [formulario, establecerFormulario] = useState(
-    FORMULARIO_INICIAL,
-  )
-
-  const [
-    erroresFormulario,
-    establecerErroresFormulario,
-  ] = useState({})
-
-  const [guardando, establecerGuardando] = useState(false)
-
   const [
     pedidoActualizando,
     establecerPedidoActualizando,
   ] = useState(null)
 
   /**
-   * Consulta los pedidos en Laravel.
+   * Consulta los pedidos desde Laravel.
    */
   const cargarPedidos = useCallback(async (parametros) => {
     establecerCargando(true)
@@ -135,10 +166,13 @@ export default function Pedidos() {
     }
   }, [])
 
+  /**
+   * Carga nuevamente los pedidos cuando
+   * cambian los filtros o la página.
+   */
   useEffect(() => {
     void cargarPedidos({
       ...filtrosAplicados,
-      pagina,
       page: pagina,
     })
   }, [
@@ -146,6 +180,31 @@ export default function Pedidos() {
     filtrosAplicados,
     pagina,
   ])
+
+  /**
+   * Consulta los productos activos que pueden
+   * agregarse a un pedido.
+   */
+  useEffect(() => {
+    async function cargarProductos() {
+      establecerCargandoProductos(true)
+
+      try {
+        const respuesta =
+          await apiProductos.disponibles()
+
+        establecerProductosDisponibles(
+          respuesta.data ?? [],
+        )
+      } catch (errorPeticion) {
+        establecerError(errorPeticion.message)
+      } finally {
+        establecerCargandoProductos(false)
+      }
+    }
+
+    void cargarProductos()
+  }, [])
 
   /**
    * Actualiza los campos de búsqueda.
@@ -166,13 +225,14 @@ export default function Pedidos() {
     evento.preventDefault()
 
     establecerPagina(1)
+
     establecerFiltrosAplicados({
       ...filtros,
     })
   }
 
   /**
-   * Limpia todos los filtros.
+   * Limpia los filtros.
    */
   function limpiarFiltros() {
     establecerFiltros(FILTROS_INICIALES)
@@ -181,7 +241,29 @@ export default function Pedidos() {
   }
 
   /**
-   * Actualiza los campos del formulario.
+   * Abre el formulario de nuevo pedido.
+   */
+  function abrirFormulario() {
+    establecerFormulario(
+      crearFormularioInicial(),
+    )
+
+    establecerErroresFormulario({})
+    establecerError('')
+    establecerMensaje('')
+    establecerMostrandoFormulario(true)
+  }
+
+  /**
+   * Cierra el formulario de pedido.
+   */
+  function cerrarFormulario() {
+    establecerMostrandoFormulario(false)
+    establecerErroresFormulario({})
+  }
+
+  /**
+   * Actualiza los campos generales del formulario.
    */
   function manejarFormulario(evento) {
     const { name, value } = evento.target
@@ -198,7 +280,69 @@ export default function Pedidos() {
   }
 
   /**
-   * Registra un pedido nuevo.
+   * Cambia el producto o cantidad de una fila.
+   */
+  function cambiarProducto(
+    indice,
+    campo,
+    valor,
+  ) {
+    establecerFormulario((actual) => ({
+      ...actual,
+
+      productos: actual.productos.map(
+        (item, posicion) =>
+          posicion === indice
+            ? {
+                ...item,
+                [campo]: valor,
+              }
+            : item,
+      ),
+    }))
+
+    establecerErroresFormulario((actuales) => ({
+      ...actuales,
+
+      [`productos.${indice}.${campo}`]:
+        undefined,
+
+      productos: undefined,
+    }))
+  }
+
+  /**
+   * Agrega una nueva fila de producto.
+   */
+  function agregarProducto() {
+    establecerFormulario((actual) => ({
+      ...actual,
+
+      productos: [
+        ...actual.productos,
+        {
+          producto_id: '',
+          cantidad: 1,
+        },
+      ],
+    }))
+  }
+
+  /**
+   * Elimina una fila de producto.
+   */
+  function eliminarProducto(indice) {
+    establecerFormulario((actual) => ({
+      ...actual,
+
+      productos: actual.productos.filter(
+        (_, posicion) => posicion !== indice,
+      ),
+    }))
+  }
+
+  /**
+   * Registra un pedido con productos y cantidades.
    */
   async function crearPedido(evento) {
     evento.preventDefault()
@@ -209,13 +353,36 @@ export default function Pedidos() {
     establecerMensaje('')
 
     try {
-      const respuesta = await apiPedidos.crear({
-        ...formulario,
+      const datosPedido = {
         caja_id: Number(formulario.caja_id),
-      })
+
+        cliente_nombre:
+          formulario.cliente_nombre,
+
+        tipo_servicio:
+          formulario.tipo_servicio,
+
+        notas:
+          formulario.notas,
+
+        productos: formulario.productos.map(
+          (item) => ({
+            producto_id:
+              Number(item.producto_id),
+
+            cantidad:
+              Number(item.cantidad),
+          }),
+        ),
+      }
+
+      const respuesta =
+        await apiPedidos.crear(datosPedido)
 
       establecerMensaje(respuesta.mensaje)
-      establecerFormulario(FORMULARIO_INICIAL)
+      establecerFormulario(
+        crearFormularioInicial(),
+      )
       establecerMostrandoFormulario(false)
       establecerPagina(1)
 
@@ -243,18 +410,19 @@ export default function Pedidos() {
     establecerMensaje('')
 
     try {
-      const respuesta = await apiPedidos.actualizar(
-        id,
-        {
-          estado,
-        },
-      )
+      const respuesta =
+        await apiPedidos.actualizar(
+          id,
+          {
+            estado,
+          },
+        )
 
       establecerPedidos((actuales) =>
         actuales.map((pedido) =>
           pedido.id === id
             ? respuesta.pedido
-            : pedido
+            : pedido,
         ),
       )
 
@@ -294,9 +462,7 @@ export default function Pedidos() {
           <button
             type="button"
             className="boton-principal"
-            onClick={() =>
-              establecerMostrandoFormulario(true)
-            }
+            onClick={abrirFormulario}
           >
             Nuevo pedido
           </button>
@@ -322,6 +488,7 @@ export default function Pedidos() {
         >
           <label>
             Buscar
+
             <input
               type="search"
               name="buscar"
@@ -333,12 +500,15 @@ export default function Pedidos() {
 
           <label>
             Estado
+
             <select
               name="estado"
               value={filtros.estado}
               onChange={manejarFiltro}
             >
-              <option value="">Todos</option>
+              <option value="">
+                Todos
+              </option>
 
               {ESTADOS.map((estado) => (
                 <option
@@ -353,14 +523,24 @@ export default function Pedidos() {
 
           <label>
             Tipo de servicio
+
             <select
               name="tipo_servicio"
               value={filtros.tipo_servicio}
               onChange={manejarFiltro}
             >
-              <option value="">Todos</option>
-              <option value="local">Local</option>
-              <option value="llevar">Para llevar</option>
+              <option value="">
+                Todos
+              </option>
+
+              <option value="local">
+                Local
+              </option>
+
+              <option value="llevar">
+                Para llevar
+              </option>
+
               <option value="domicilio">
                 Domicilio
               </option>
@@ -410,6 +590,7 @@ export default function Pedidos() {
                 <tr>
                   <th>Folio</th>
                   <th>Cliente</th>
+                  <th>Productos</th>
                   <th>Servicio</th>
                   <th>Caja</th>
                   <th>Fecha</th>
@@ -422,7 +603,9 @@ export default function Pedidos() {
                 {pedidos.map((pedido) => (
                   <tr key={pedido.id}>
                     <td>
-                      <strong>{pedido.folio}</strong>
+                      <strong>
+                        {pedido.folio}
+                      </strong>
                     </td>
 
                     <td>
@@ -431,7 +614,28 @@ export default function Pedidos() {
                     </td>
 
                     <td>
-                      {pedido.tipo_servicio}
+                      {pedido.productos?.length > 0 ? (
+                        pedido.productos.map(
+                          (detalle) => (
+                            <div
+                              key={detalle.id}
+                              className="small"
+                            >
+                              {detalle.producto?.nombre ??
+                                'Producto'}{' '}
+                              × {detalle.cantidad}
+                            </div>
+                          ),
+                        )
+                      ) : (
+                        'Sin productos'
+                      )}
+                    </td>
+
+                    <td>
+                      {mostrarServicio(
+                        pedido.tipo_servicio,
+                      )}
                     </td>
 
                     <td>
@@ -439,11 +643,14 @@ export default function Pedidos() {
                     </td>
 
                     <td>
-                      {mostrarFecha(pedido.pedido_en)}
+                      {mostrarFecha(
+                        pedido.pedido_en,
+                      )}
                     </td>
 
                     <td>
-                      ${Number(
+                      $
+                      {Number(
                         pedido.total ?? 0,
                       ).toFixed(2)}
                     </td>
@@ -490,7 +697,7 @@ export default function Pedidos() {
             }
             onClick={() =>
               establecerPagina((actual) =>
-                Math.max(1, actual - 1)
+                Math.max(1, actual - 1),
               )
             }
           >
@@ -512,7 +719,7 @@ export default function Pedidos() {
             }
             onClick={() =>
               establecerPagina((actual) =>
-                actual + 1
+                actual + 1,
               )
             }
           >
@@ -525,9 +732,7 @@ export default function Pedidos() {
         <div
           className="modal-fondo"
           role="presentation"
-          onMouseDown={() =>
-            establecerMostrandoFormulario(false)
-          }
+          onMouseDown={cerrarFormulario}
         >
           <section
             className="modal-pedido"
@@ -551,11 +756,7 @@ export default function Pedidos() {
                 type="button"
                 className="modal-cerrar"
                 aria-label="Cerrar formulario"
-                onClick={() =>
-                  establecerMostrandoFormulario(
-                    false,
-                  )
-                }
+                onClick={cerrarFormulario}
               >
                 ×
               </button>
@@ -567,6 +768,7 @@ export default function Pedidos() {
             >
               <label>
                 Número de caja
+
                 <input
                   type="number"
                   min="1"
@@ -578,16 +780,14 @@ export default function Pedidos() {
 
                 {erroresFormulario.caja_id?.[0] && (
                   <small className="error-campo">
-                    {
-                      erroresFormulario
-                        .caja_id[0]
-                    }
+                    {erroresFormulario.caja_id[0]}
                   </small>
                 )}
               </label>
 
               <label>
                 Nombre del cliente
+
                 <input
                   type="text"
                   name="cliente_nombre"
@@ -612,6 +812,7 @@ export default function Pedidos() {
 
               <label>
                 Tipo de servicio
+
                 <select
                   name="tipo_servicio"
                   value={
@@ -644,8 +845,33 @@ export default function Pedidos() {
                 )}
               </label>
 
+              <SelectorProductosPedido
+                productosDisponibles={
+                  productosDisponibles
+                }
+                productosSeleccionados={
+                  formulario.productos
+                }
+                errores={
+                  erroresFormulario
+                }
+                cargando={
+                  cargandoProductos
+                }
+                alCambiar={
+                  cambiarProducto
+                }
+                alAgregar={
+                  agregarProducto
+                }
+                alEliminar={
+                  eliminarProducto
+                }
+              />
+
               <label>
                 Notas
+
                 <textarea
                   name="notas"
                   maxLength="1000"
@@ -656,10 +882,7 @@ export default function Pedidos() {
 
                 {erroresFormulario.notas?.[0] && (
                   <small className="error-campo">
-                    {
-                      erroresFormulario
-                        .notas[0]
-                    }
+                    {erroresFormulario.notas[0]}
                   </small>
                 )}
               </label>
@@ -668,11 +891,7 @@ export default function Pedidos() {
                 <button
                   type="button"
                   className="boton-secundario"
-                  onClick={() =>
-                    establecerMostrandoFormulario(
-                      false,
-                    )
-                  }
+                  onClick={cerrarFormulario}
                 >
                   Cancelar
                 </button>
@@ -680,7 +899,10 @@ export default function Pedidos() {
                 <button
                   type="submit"
                   className="boton-principal"
-                  disabled={guardando}
+                  disabled={
+                    guardando ||
+                    cargandoProductos
+                  }
                 >
                   {guardando
                     ? 'Guardando...'
