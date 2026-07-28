@@ -13,6 +13,7 @@ import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena
 import PanelPrincipal from './paginas/PanelPrincipal.jsx'
 import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
+import Pagos from './paginas/pagos/Pagos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
 import Productos from './paginas/productos/Productos.jsx'
@@ -74,6 +75,11 @@ export default function App() {
               element={<Pedidos />}
             />
           </Route>
+          
+          <Route
+            path="/pagos"
+            element={<Pagos />}
+          />
 
           {/* Disponible para administrador y gerente. */}
           <Route
