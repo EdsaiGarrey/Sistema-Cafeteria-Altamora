@@ -8,9 +8,11 @@ use App\Http\Requests\Pedido\UpdatePedidoRequest;
 use App\Http\Resources\PedidoResource;
 use App\Models\Caja;
 use App\Models\Pedido;
+use App\Models\Producto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PedidoController extends Controller
@@ -25,32 +27,37 @@ class PedidoController extends Controller
             ->with([
                 'caja',
                 'usuario',
+                'detalles.producto',
             ]);
 
         /*
-         * Busca por folio o por nombre del cliente.
+         * Busca por folio o nombre del cliente.
          */
         if ($request->filled('buscar')) {
             $buscar = trim(
                 (string) $request->input('buscar')
             );
 
-            $consulta->where(function ($subconsulta) use ($buscar) {
-                $subconsulta
-                    ->where(
-                        'folio',
-                        'like',
-                        "%{$buscar}%"
-                    )
-                    ->orWhere(
-                        'cliente_nombre',
-                        'like',
-                        "%{$buscar}%"
-                    );
-            });
+            $consulta->where(
+                function ($subconsulta) use ($buscar) {
+                    $subconsulta
+                        ->where(
+                            'folio',
+                            'like',
+                            "%{$buscar}%"
+                        )
+                        ->orWhere(
+                            'cliente_nombre',
+                            'like',
+                            "%{$buscar}%"
+                        );
+                }
+            );
         }
 
-        // Filtra por estado.
+        /*
+         * Filtra por estado.
+         */
         if ($request->filled('estado')) {
             $consulta->where(
                 'estado',
@@ -58,7 +65,9 @@ class PedidoController extends Controller
             );
         }
 
-        // Filtra por tipo de servicio.
+        /*
+         * Filtra por tipo de servicio.
+         */
         if ($request->filled('tipo_servicio')) {
             $consulta->where(
                 'tipo_servicio',
@@ -66,7 +75,9 @@ class PedidoController extends Controller
             );
         }
 
-        // Filtra por caja.
+        /*
+         * Filtra por caja.
+         */
         if ($request->filled('caja_id')) {
             $consulta->where(
                 'caja_id',
@@ -74,7 +85,9 @@ class PedidoController extends Controller
             );
         }
 
-        // Filtra desde una fecha.
+        /*
+         * Filtra desde una fecha.
+         */
         if ($request->filled('fecha_desde')) {
             $consulta->whereDate(
                 'pedido_en',
@@ -83,7 +96,9 @@ class PedidoController extends Controller
             );
         }
 
-        // Filtra hasta una fecha.
+        /*
+         * Filtra hasta una fecha.
+         */
         if ($request->filled('fecha_hasta')) {
             $consulta->whereDate(
                 'pedido_en',
@@ -93,8 +108,7 @@ class PedidoController extends Controller
         }
 
         /*
-         * Limita la cantidad máxima a 100 registros
-         * por página.
+         * Limita a un máximo de 100 registros.
          */
         $porPagina = max(
             1,
@@ -122,7 +136,7 @@ class PedidoController extends Controller
     }
 
     /**
-     * Registra un pedido nuevo.
+     * Registra un pedido con sus productos.
      */
     public function store(
         StorePedidoRequest $request
@@ -134,12 +148,12 @@ class PedidoController extends Controller
         );
 
         /*
-         * No se pueden registrar pedidos dentro
-         * de una caja cerrada.
+         * No se permiten pedidos en una caja cerrada.
          */
         if ($caja->estado !== 'abierta') {
             return response()->json([
                 'correcto' => false,
+
                 'mensaje' =>
                     'No puedes registrar pedidos en una caja cerrada.',
 
@@ -151,36 +165,132 @@ class PedidoController extends Controller
             ], 422);
         }
 
-        $pedido = Pedido::create([
-            'folio' => $this->generarFolio(),
-            'caja_id' => $caja->id,
-            'usuario_id' => $request->user()->id,
+        $usuarioId = $request->user()->id;
 
-            'cliente_nombre' =>
-                $datos['cliente_nombre'] ?? null,
+        /*
+         * Guarda el pedido y sus productos dentro
+         * de una sola transacción.
+         */
+        $pedido = DB::transaction(
+            function () use (
+                $datos,
+                $caja,
+                $usuarioId
+            ) {
+                /*
+                 * Primero se crea el pedido.
+                 */
+                $pedido = Pedido::create([
+                    'folio' =>
+                        $this->generarFolio(),
 
-            'tipo_servicio' =>
-                $datos['tipo_servicio'],
+                    'caja_id' =>
+                        $caja->id,
 
-            'estado' => 'pendiente',
-            'subtotal' => 0,
-            'descuento' => 0,
-            'impuestos' => 0,
-            'total' => 0,
+                    'usuario_id' =>
+                        $usuarioId,
 
-            'notas' =>
-                $datos['notas'] ?? null,
+                    'cliente_nombre' =>
+                        $datos['cliente_nombre'] ?? null,
 
-            'pedido_en' => now(),
-        ]);
+                    'tipo_servicio' =>
+                        $datos['tipo_servicio'],
 
-        $pedido->load([
-            'caja',
-            'usuario',
-        ]);
+                    'estado' =>
+                        'pendiente',
+
+                    'subtotal' =>
+                        0,
+
+                    'descuento' =>
+                        0,
+
+                    'impuestos' =>
+                        0,
+
+                    'total' =>
+                        0,
+
+                    'notas' =>
+                        $datos['notas'] ?? null,
+
+                    'pedido_en' =>
+                        now(),
+                ]);
+
+                $subtotal = 0;
+
+                /*
+                 * Recorre los productos enviados.
+                 */
+                foreach (
+                    $datos['productos'] as $item
+                ) {
+                    $producto = Producto::findOrFail(
+                        $item['producto_id']
+                    );
+
+                    $cantidad = (int)
+                        $item['cantidad'];
+
+                    /*
+                     * El precio se obtiene desde MySQL.
+                     */
+                    $precioUnitario = (float)
+                        $producto->precio;
+
+                    $subtotalDetalle = round(
+                        $precioUnitario * $cantidad,
+                        2
+                    );
+
+                    /*
+                     * Guarda el producto dentro del pedido.
+                     */
+                    $pedido->detalles()->create([
+                        'producto_id' =>
+                            $producto->id,
+
+                        'cantidad' =>
+                            $cantidad,
+
+                        'precio_unitario' =>
+                            $precioUnitario,
+
+                        'subtotal' =>
+                            $subtotalDetalle,
+                    ]);
+
+                    $subtotal += $subtotalDetalle;
+                }
+
+                /*
+                 * Actualiza los totales del pedido.
+                 */
+                $subtotal = round(
+                    $subtotal,
+                    2
+                );
+
+                $pedido->update([
+                    'subtotal' =>
+                        $subtotal,
+
+                    'total' =>
+                        $subtotal,
+                ]);
+
+                return $pedido->load([
+                    'caja',
+                    'usuario',
+                    'detalles.producto',
+                ]);
+            }
+        );
 
         return response()->json([
             'correcto' => true,
+
             'mensaje' =>
                 'El pedido fue registrado correctamente.',
 
@@ -200,10 +310,12 @@ class PedidoController extends Controller
             'caja',
             'usuario',
             'pagos',
+            'detalles.producto',
         ]);
 
         return response()->json([
             'correcto' => true,
+
             'mensaje' =>
                 'El pedido fue consultado correctamente.',
 
@@ -221,12 +333,12 @@ class PedidoController extends Controller
         Pedido $pedido
     ): JsonResponse {
         /*
-         * Los pedidos cancelados no deben modificarse.
-         * La cancelación formal se implementará después.
+         * Los pedidos cancelados no pueden modificarse.
          */
         if ($pedido->estado === 'cancelado') {
             return response()->json([
                 'correcto' => false,
+
                 'mensaje' =>
                     'No puedes modificar un pedido cancelado.',
             ], 422);
@@ -235,8 +347,7 @@ class PedidoController extends Controller
         $datos = $request->validated();
 
         /*
-         * Marca la fecha de finalización cuando
-         * el pedido cambia a entregado.
+         * Registra la fecha cuando se entrega.
          */
         if (
             isset($datos['estado']) &&
@@ -246,8 +357,7 @@ class PedidoController extends Controller
         }
 
         /*
-         * Si regresa a otro estado, elimina
-         * temporalmente la fecha de finalización.
+         * Elimina la fecha si cambia a otro estado.
          */
         if (
             isset($datos['estado']) &&
@@ -262,10 +372,12 @@ class PedidoController extends Controller
         $pedido->load([
             'caja',
             'usuario',
+            'detalles.producto',
         ]);
 
         return response()->json([
             'correcto' => true,
+
             'mensaje' =>
                 'El pedido fue actualizado correctamente.',
 
