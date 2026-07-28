@@ -3,7 +3,19 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { useNavigate } from 'react-router'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Form,
+  Row,
+  Spinner,
+  Table,
+} from 'react-bootstrap'
+import FormularioUsuario from '../../components/usuarios/FormularioUsuario.jsx'
+import ConfirmarEliminacion from '../../components/usuarios/ConfirmarEliminacion.jsx'
 import { apiUsuarios } from '../../servicios/usuarios.js'
 import './usuarios.css'
 
@@ -13,15 +25,15 @@ const FILTROS_INICIALES = {
 }
 
 const FORMULARIO_INICIAL = {
-  nombre: '',
-  correo: '',
-  rol: 'empleado',
-  contrasena: '',
-  confirmarContrasena: '',
+  name: '',
+  email: '',
+  role: 'empleado',
+  password: '',
+  password_confirmation: '',
 }
 
 /**
- * Convierte el rol técnico en un texto legible.
+ * Convierte el rol técnico en texto legible.
  */
 function mostrarRol(rol) {
   const roles = {
@@ -34,8 +46,20 @@ function mostrarRol(rol) {
 }
 
 /**
- * Convierte una fecha de Laravel
- * al formato utilizado en México.
+ * Define el color del distintivo del rol.
+ */
+function colorRol(rol) {
+  const colores = {
+    administrador: 'primary',
+    gerente: 'warning',
+    empleado: 'secondary',
+  }
+
+  return colores[rol] ?? 'secondary'
+}
+
+/**
+ * Muestra una fecha en formato mexicano.
  */
 function mostrarFecha(fecha) {
   if (!fecha) {
@@ -49,12 +73,9 @@ function mostrarFecha(fecha) {
 }
 
 /**
- * Página administrativa para consultar,
- * registrar, editar y eliminar usuarios.
+ * Administración de cuentas del sistema.
  */
 export default function Usuarios() {
-  const navegar = useNavigate()
-
   const [usuarios, establecerUsuarios] = useState([])
 
   const [meta, establecerMeta] = useState({
@@ -63,9 +84,8 @@ export default function Usuarios() {
     total: 0,
   })
 
-  const [filtros, establecerFiltros] = useState(
-    FILTROS_INICIALES,
-  )
+  const [filtros, establecerFiltros] =
+    useState(FILTROS_INICIALES)
 
   const [
     filtrosAplicados,
@@ -87,16 +107,16 @@ export default function Usuarios() {
     establecerUsuarioEditando,
   ] = useState(null)
 
-  const [formulario, establecerFormulario] = useState(
-    FORMULARIO_INICIAL,
-  )
+  const [formulario, establecerFormulario] =
+    useState(FORMULARIO_INICIAL)
 
   const [
     erroresFormulario,
     establecerErroresFormulario,
   ] = useState({})
 
-  const [guardando, establecerGuardando] = useState(false)
+  const [guardando, establecerGuardando] =
+    useState(false)
 
   const [
     usuarioEliminando,
@@ -107,38 +127,37 @@ export default function Usuarios() {
     useState(false)
 
   /**
-   * Consulta los usuarios almacenados en Laravel.
+   * Consulta usuarios con filtros y paginación.
    */
-  const cargarUsuarios = useCallback(async (parametros) => {
-    establecerCargando(true)
-    establecerError('')
+  const cargarUsuarios = useCallback(
+    async (parametros) => {
+      establecerCargando(true)
+      establecerError('')
 
-    try {
-      const respuesta = await apiUsuarios.listar({
-        ...parametros,
-        por_pagina: 10,
-      })
+      try {
+        const respuesta = await apiUsuarios.listar({
+          ...parametros,
+          por_pagina: 10,
+        })
 
-      establecerUsuarios(respuesta.data ?? [])
+        establecerUsuarios(respuesta.data ?? [])
 
-      establecerMeta(
-        respuesta.meta ?? {
-          current_page: 1,
-          last_page: 1,
-          total: 0,
-        },
-      )
-    } catch (errorPeticion) {
-      establecerError(errorPeticion.message)
-    } finally {
-      establecerCargando(false)
-    }
-  }, [])
+        establecerMeta(
+          respuesta.meta ?? {
+            current_page: 1,
+            last_page: 1,
+            total: 0,
+          },
+        )
+      } catch (errorPeticion) {
+        establecerError(errorPeticion.message)
+      } finally {
+        establecerCargando(false)
+      }
+    },
+    [],
+  )
 
-  /**
-   * Recarga los usuarios cuando cambian
-   * la página o los filtros aplicados.
-   */
   useEffect(() => {
     void cargarUsuarios({
       ...filtrosAplicados,
@@ -150,9 +169,6 @@ export default function Usuarios() {
     pagina,
   ])
 
-  /**
-   * Actualiza los campos de los filtros.
-   */
   function manejarFiltro(evento) {
     const { name, value } = evento.target
 
@@ -162,32 +178,19 @@ export default function Usuarios() {
     }))
   }
 
-  /**
-   * Aplica la búsqueda y el filtro por rol.
-   */
   function aplicarFiltros(evento) {
     evento.preventDefault()
-
     establecerPagina(1)
-
-    establecerFiltrosAplicados({
-      ...filtros,
-    })
+    establecerFiltrosAplicados(filtros)
   }
 
-  /**
-   * Restablece todos los filtros.
-   */
   function limpiarFiltros() {
     establecerFiltros(FILTROS_INICIALES)
     establecerFiltrosAplicados(FILTROS_INICIALES)
     establecerPagina(1)
   }
 
-  /**
-   * Abre el formulario para registrar un usuario.
-   */
-  function abrirFormularioCreacion() {
+  function abrirCreacion() {
     establecerUsuarioEditando(null)
     establecerFormulario(FORMULARIO_INICIAL)
     establecerErroresFormulario({})
@@ -196,19 +199,15 @@ export default function Usuarios() {
     establecerMostrandoFormulario(true)
   }
 
-  /**
-   * Abre el formulario con los datos
-   * del usuario seleccionado.
-   */
-  function abrirFormularioEdicion(usuario) {
+  function abrirEdicion(usuario) {
     establecerUsuarioEditando(usuario)
 
     establecerFormulario({
-      nombre: usuario.nombre,
-      correo: usuario.correo,
-      rol: usuario.rol,
-      contrasena: '',
-      confirmarContrasena: '',
+      name: usuario.nombre,
+      email: usuario.correo,
+      role: usuario.rol,
+      password: '',
+      password_confirmation: '',
     })
 
     establecerErroresFormulario({})
@@ -217,9 +216,6 @@ export default function Usuarios() {
     establecerMostrandoFormulario(true)
   }
 
-  /**
-   * Cierra y limpia el formulario.
-   */
   function cerrarFormulario() {
     if (guardando) {
       return
@@ -232,9 +228,6 @@ export default function Usuarios() {
     establecerError('')
   }
 
-  /**
-   * Actualiza los campos del formulario.
-   */
   function manejarFormulario(evento) {
     const { name, value } = evento.target
 
@@ -243,60 +236,37 @@ export default function Usuarios() {
       [name]: value,
     }))
 
-    const equivalencias = {
-      nombre: 'name',
-      correo: 'email',
-      rol: 'role',
-      contrasena: 'password',
-      confirmarContrasena: 'password',
-    }
-
-    const campoLaravel = equivalencias[name]
-
     establecerErroresFormulario((actuales) => ({
       ...actuales,
-      [campoLaravel]: undefined,
+      [name]: undefined,
+      password:
+        name === 'password_confirmation'
+          ? undefined
+          : actuales.password,
     }))
   }
 
-  /**
-   * Obtiene el primer error de validación
-   * recibido para un campo.
-   */
-  function obtenerErrorCampo(campo) {
-    return erroresFormulario[campo]?.[0] ?? ''
-  }
-
-  /**
-   * Registra o actualiza un usuario.
-   */
   async function guardarUsuario(evento) {
     evento.preventDefault()
 
     establecerGuardando(true)
-    establecerErroresFormulario({})
     establecerError('')
     establecerMensaje('')
+    establecerErroresFormulario({})
 
     const datos = {
-      name: formulario.nombre.trim(),
-      email: formulario.correo.trim(),
-      role: formulario.rol,
+      name: formulario.name.trim(),
+      email: formulario.email.trim(),
+      role: formulario.role,
     }
 
-    /*
-     * La contraseña es obligatoria al registrar.
-     * Durante la edición solamente se envía cuando
-     * el administrador escribe una nueva.
-     */
     if (
       !usuarioEditando ||
-      formulario.contrasena !== ''
+      formulario.password !== ''
     ) {
-      datos.password = formulario.contrasena
-
+      datos.password = formulario.password
       datos.password_confirmation =
-        formulario.confirmarContrasena
+        formulario.password_confirmation
     }
 
     try {
@@ -308,9 +278,7 @@ export default function Usuarios() {
         : await apiUsuarios.crear(datos)
 
       establecerMensaje(respuesta.mensaje)
-      establecerMostrandoFormulario(false)
-      establecerUsuarioEditando(null)
-      establecerFormulario(FORMULARIO_INICIAL)
+      cerrarFormulario()
 
       await cargarUsuarios({
         ...filtrosAplicados,
@@ -327,38 +295,10 @@ export default function Usuarios() {
     }
   }
 
-  /**
-   * Abre la confirmación para eliminar
-   * al usuario seleccionado.
-   */
-  function abrirConfirmacionEliminar(usuario) {
-    establecerUsuarioEliminando(usuario)
-    establecerError('')
-    establecerMensaje('')
-  }
-
-  /**
-   * Cierra la confirmación de eliminación.
-   */
-  function cerrarConfirmacionEliminar() {
-    if (eliminando) {
-      return
-    }
-
-    establecerUsuarioEliminando(null)
-    establecerError('')
-  }
-
-  /**
-   * Elimina el usuario después
-   * de confirmar la operación.
-   */
   async function eliminarUsuario() {
     if (!usuarioEliminando) {
       return
     }
-
-    const usuarioId = usuarioEliminando.id
 
     establecerEliminando(true)
     establecerError('')
@@ -366,16 +306,12 @@ export default function Usuarios() {
 
     try {
       const respuesta = await apiUsuarios.eliminar(
-        usuarioId,
+        usuarioEliminando.id,
       )
 
       establecerMensaje(respuesta.mensaje)
       establecerUsuarioEliminando(null)
 
-      /*
-       * Si se elimina el único usuario de una página,
-       * se regresa a la página anterior.
-       */
       const paginaDestino =
         usuarios.length === 1 && pagina > 1
           ? pagina - 1
@@ -383,10 +319,6 @@ export default function Usuarios() {
 
       establecerPagina(paginaDestino)
 
-      /*
-       * Cuando la página no cambia, actualizamos
-       * manualmente el listado.
-       */
       if (paginaDestino === pagina) {
         await cargarUsuarios({
           ...filtrosAplicados,
@@ -401,164 +333,140 @@ export default function Usuarios() {
   }
 
   return (
-    <main className="usuarios-pagina">
+    <section className="usuarios-vista">
       <header className="usuarios-encabezado">
         <div>
-          <p className="usuarios-marca">
-            Altamora Café
-          </p>
-
-          <h1>Administración de usuarios</h1>
+          <h1>Usuarios</h1>
 
           <p>
-            Consulta y administra las cuentas y roles
-            registrados dentro del sistema.
+            Administra las cuentas y roles registrados.
           </p>
         </div>
 
-        <div className="usuarios-encabezado-acciones">
-          <button
-            type="button"
-            className="usuarios-boton-principal"
-            onClick={abrirFormularioCreacion}
-          >
-            Nuevo usuario
-          </button>
-
-          <button
-            type="button"
-            className="usuarios-boton-secundario"
-            onClick={() => navegar('/panel')}
-          >
-            Regresar al panel
-          </button>
-        </div>
+        <Button
+          type="button"
+          className="usuarios-boton-principal"
+          onClick={abrirCreacion}
+        >
+          Nuevo usuario
+        </Button>
       </header>
 
-      <section className="usuarios-resumen">
-        <div>
-          <span>Usuarios registrados</span>
-
+      <Card className="usuarios-resumen">
+        <Card.Body>
+          <small>Usuarios registrados</small>
           <strong>{meta.total}</strong>
-        </div>
+        </Card.Body>
+      </Card>
 
-        <div>
-          <span>Página actual</span>
+      <Card className="usuarios-filtros">
+        <Card.Body>
+          <Form onSubmit={aplicarFiltros}>
+            <Row className="g-3 align-items-end">
+              <Col xs={12} md>
+                <Form.Group controlId="buscar-usuario">
+                  <Form.Label>
+                    Nombre o correo
+                  </Form.Label>
 
-          <strong>
-            {meta.current_page} de {meta.last_page}
-          </strong>
-        </div>
-      </section>
+                  <Form.Control
+                    name="buscar"
+                    type="search"
+                    value={filtros.buscar}
+                    onChange={manejarFiltro}
+                    placeholder="Buscar usuario..."
+                  />
+                </Form.Group>
+              </Col>
 
-      <form
-        className="usuarios-filtros"
-        onSubmit={aplicarFiltros}
-      >
-        <div className="usuarios-campo">
-          <label htmlFor="buscar">
-            Nombre o correo
-          </label>
+              <Col xs={12} md={4}>
+                <Form.Group controlId="filtrar-role">
+                  <Form.Label>Rol</Form.Label>
 
-          <input
-            id="buscar"
-            name="buscar"
-            type="search"
-            value={filtros.buscar}
-            onChange={manejarFiltro}
-            placeholder="Buscar usuario..."
-          />
-        </div>
+                  <Form.Select
+                    name="role"
+                    value={filtros.role}
+                    onChange={manejarFiltro}
+                  >
+                    <option value="">
+                      Todos los roles
+                    </option>
 
-        <div className="usuarios-campo">
-          <label htmlFor="role">
-            Rol
-          </label>
+                    <option value="administrador">
+                      Administrador
+                    </option>
 
-          <select
-            id="role"
-            name="role"
-            value={filtros.role}
-            onChange={manejarFiltro}
-          >
-            <option value="">
-              Todos los roles
-            </option>
+                    <option value="gerente">
+                      Gerente
+                    </option>
 
-            <option value="administrador">
-              Administrador
-            </option>
+                    <option value="empleado">
+                      Empleado
+                    </option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
 
-            <option value="gerente">
-              Gerente
-            </option>
+              <Col xs={12} md="auto">
+                <div className="d-flex gap-2">
+                  <Button
+                    type="submit"
+                    className="usuarios-boton-principal"
+                  >
+                    Buscar
+                  </Button>
 
-            <option value="empleado">
-              Empleado
-            </option>
-          </select>
-        </div>
-
-        <div className="usuarios-filtros-acciones">
-          <button
-            type="submit"
-            className="usuarios-boton-principal"
-          >
-            Aplicar filtros
-          </button>
-
-          <button
-            type="button"
-            className="usuarios-boton-secundario"
-            onClick={limpiarFiltros}
-          >
-            Limpiar
-          </button>
-        </div>
-      </form>
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={limpiarFiltros}
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </Form>
+        </Card.Body>
+      </Card>
 
       {mensaje && (
-        <div
-          className="usuarios-alerta usuarios-alerta-exito"
-          role="status"
-        >
+        <Alert variant="success">
           {mensaje}
-        </div>
+        </Alert>
       )}
 
-      {error && !usuarioEliminando && (
-        <div
-          className="usuarios-alerta usuarios-alerta-error"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
+      {error &&
+        !mostrandoFormulario &&
+        !usuarioEliminando && (
+          <Alert variant="danger">
+            {error}
+          </Alert>
+        )}
 
-      <section className="usuarios-tabla-contenedor">
+      <Card className="usuarios-tabla-tarjeta">
         {cargando ? (
-          <div className="usuarios-estado">
-            <div className="usuarios-cargador" />
+          <Card.Body className="usuarios-estado">
+            <Spinner animation="border" />
 
-            <p>Cargando usuarios...</p>
-          </div>
+            <span>Cargando usuarios...</span>
+          </Card.Body>
         ) : usuarios.length === 0 ? (
-          <div className="usuarios-estado">
-            <h2>No se encontraron usuarios</h2>
-
-            <p>
-              Modifica los filtros para realizar
-              una búsqueda diferente.
-            </p>
-          </div>
+          <Card.Body className="usuarios-estado">
+            No se encontraron usuarios.
+          </Card.Body>
         ) : (
-          <table className="usuarios-tabla">
+          <Table
+            responsive
+            hover
+            className="mb-0 align-middle"
+          >
             <thead>
               <tr>
                 <th>Usuario</th>
                 <th>Correo electrónico</th>
                 <th>Rol</th>
-                <th>Fecha de registro</th>
+                <th>Registro</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -569,19 +477,17 @@ export default function Usuarios() {
                   <td>
                     <strong>{usuario.nombre}</strong>
 
-                    <small>ID: {usuario.id}</small>
+                    <small className="d-block text-muted">
+                      ID: {usuario.id}
+                    </small>
                   </td>
 
                   <td>{usuario.correo}</td>
 
                   <td>
-                    <span
-                      className={
-                        `usuarios-rol usuarios-rol-${usuario.rol}`
-                      }
-                    >
+                    <Badge bg={colorRol(usuario.rol)}>
                       {mostrarRol(usuario.rol)}
-                    </span>
+                    </Badge>
                   </td>
 
                   <td>
@@ -589,360 +495,114 @@ export default function Usuarios() {
                   </td>
 
                   <td>
-                    <div className="usuarios-acciones-tabla">
-                      <button
+                    <div className="d-flex gap-2">
+                      <Button
                         type="button"
-                        className="usuarios-boton-editar"
-                        onClick={() => {
-                          abrirFormularioEdicion(usuario)
-                        }}
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() =>
+                          abrirEdicion(usuario)
+                        }
                       >
                         Editar
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
-                        className="usuarios-boton-eliminar"
+                        size="sm"
+                        variant="outline-danger"
                         onClick={() => {
-                          abrirConfirmacionEliminar(usuario)
+                          establecerUsuarioEliminando(
+                            usuario,
+                          )
+                          establecerError('')
+                          establecerMensaje('')
                         }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
-      </section>
+      </Card>
 
-      <nav
-        className="usuarios-paginacion"
-        aria-label="Paginación de usuarios"
-      >
-        <button
+      <footer className="usuarios-paginacion">
+        <Button
           type="button"
+          variant="outline-secondary"
           disabled={
             cargando ||
             meta.current_page <= 1
           }
-          onClick={() => {
+          onClick={() =>
             establecerPagina((actual) =>
               Math.max(1, actual - 1),
             )
-          }}
+          }
         >
           Anterior
-        </button>
+        </Button>
 
         <span>
           Página {meta.current_page} de {meta.last_page}
         </span>
 
-        <button
+        <Button
           type="button"
+          variant="outline-secondary"
           disabled={
             cargando ||
             meta.current_page >= meta.last_page
           }
-          onClick={() => {
+          onClick={() =>
             establecerPagina((actual) =>
               Math.min(
                 meta.last_page,
                 actual + 1,
               ),
             )
-          }}
+          }
         >
           Siguiente
-        </button>
-      </nav>
+        </Button>
+      </footer>
 
-      {mostrandoFormulario && (
-        <div
-          className="usuarios-modal-fondo"
-          role="presentation"
-        >
-          <section
-            className="usuarios-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="titulo-formulario-usuario"
-          >
-            <header className="usuarios-modal-encabezado">
-              <div>
-                <p className="usuarios-marca">
-                  Gestión de cuentas
-                </p>
+      <FormularioUsuario
+        mostrar={mostrandoFormulario}
+        usuarioEditando={usuarioEditando}
+        formulario={formulario}
+        errores={erroresFormulario}
+        error={
+          mostrandoFormulario
+            ? error
+            : ''
+        }
+        guardando={guardando}
+        alCambiar={manejarFormulario}
+        alGuardar={guardarUsuario}
+        alCerrar={cerrarFormulario}
+      />
 
-                <h2 id="titulo-formulario-usuario">
-                  {usuarioEditando
-                    ? 'Editar usuario'
-                    : 'Registrar usuario'}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                className="usuarios-modal-cerrar"
-                onClick={cerrarFormulario}
-                disabled={guardando}
-                aria-label="Cerrar formulario"
-              >
-                ×
-              </button>
-            </header>
-
-            <form
-              className="usuarios-formulario"
-              onSubmit={guardarUsuario}
-            >
-              {error && (
-                <div
-                  className="usuarios-alerta usuarios-alerta-error"
-                  role="alert"
-                >
-                  {error}
-                </div>
-              )}
-
-              <div className="usuarios-campo">
-                <label htmlFor="nombre">
-                  Nombre completo
-                </label>
-
-                <input
-                  id="nombre"
-                  name="nombre"
-                  type="text"
-                  value={formulario.nombre}
-                  onChange={manejarFormulario}
-                  autoComplete="name"
-                />
-
-                {obtenerErrorCampo('name') && (
-                  <small className="usuarios-error-campo">
-                    {obtenerErrorCampo('name')}
-                  </small>
-                )}
-              </div>
-
-              <div className="usuarios-campo">
-                <label htmlFor="correo">
-                  Correo electrónico
-                </label>
-
-                <input
-                  id="correo"
-                  name="correo"
-                  type="email"
-                  value={formulario.correo}
-                  onChange={manejarFormulario}
-                  autoComplete="email"
-                />
-
-                {obtenerErrorCampo('email') && (
-                  <small className="usuarios-error-campo">
-                    {obtenerErrorCampo('email')}
-                  </small>
-                )}
-              </div>
-
-              <div className="usuarios-campo">
-                <label htmlFor="rol">
-                  Rol
-                </label>
-
-                <select
-                  id="rol"
-                  name="rol"
-                  value={formulario.rol}
-                  onChange={manejarFormulario}
-                >
-                  <option value="administrador">
-                    Administrador
-                  </option>
-
-                  <option value="gerente">
-                    Gerente
-                  </option>
-
-                  <option value="empleado">
-                    Empleado
-                  </option>
-                </select>
-
-                {obtenerErrorCampo('role') && (
-                  <small className="usuarios-error-campo">
-                    {obtenerErrorCampo('role')}
-                  </small>
-                )}
-              </div>
-
-              {usuarioEditando && (
-                <p className="usuarios-formulario-ayuda">
-                  Deja la contraseña vacía para conservar
-                  la contraseña actual.
-                </p>
-              )}
-
-              <div className="usuarios-formulario-columnas">
-                <div className="usuarios-campo">
-                  <label htmlFor="contrasena">
-                    {usuarioEditando
-                      ? 'Nueva contraseña'
-                      : 'Contraseña'}
-                  </label>
-
-                  <input
-                    id="contrasena"
-                    name="contrasena"
-                    type="password"
-                    value={formulario.contrasena}
-                    onChange={manejarFormulario}
-                    autoComplete="new-password"
-                  />
-                </div>
-
-                <div className="usuarios-campo">
-                  <label htmlFor="confirmarContrasena">
-                    Confirmar contraseña
-                  </label>
-
-                  <input
-                    id="confirmarContrasena"
-                    name="confirmarContrasena"
-                    type="password"
-                    value={formulario.confirmarContrasena}
-                    onChange={manejarFormulario}
-                    autoComplete="new-password"
-                  />
-                </div>
-              </div>
-
-              {obtenerErrorCampo('password') && (
-                <small className="usuarios-error-campo">
-                  {obtenerErrorCampo('password')}
-                </small>
-              )}
-
-              <footer className="usuarios-modal-acciones">
-                <button
-                  type="button"
-                  className="usuarios-boton-secundario"
-                  onClick={cerrarFormulario}
-                  disabled={guardando}
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  className="usuarios-boton-principal"
-                  disabled={guardando}
-                >
-                  {guardando
-                    ? 'Guardando...'
-                    : usuarioEditando
-                      ? 'Guardar cambios'
-                      : 'Registrar usuario'}
-                </button>
-              </footer>
-            </form>
-          </section>
-        </div>
-      )}
-
-      {usuarioEliminando && (
-        <div
-          className="usuarios-modal-fondo"
-          role="presentation"
-        >
-          <section
-            className="usuarios-confirmacion"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="titulo-eliminar-usuario"
-            aria-describedby="descripcion-eliminar-usuario"
-          >
-            <span
-              className="usuarios-confirmacion-icono"
-              aria-hidden="true"
-            >
-              !
-            </span>
-
-            <p className="usuarios-marca">
-              Confirmar eliminación
-            </p>
-
-            <h2 id="titulo-eliminar-usuario">
-              ¿Eliminar este usuario?
-            </h2>
-
-            <p id="descripcion-eliminar-usuario">
-              La cuenta de{' '}
-
-              <strong>
-                {usuarioEliminando.nombre}
-              </strong>{' '}
-
-              será eliminada definitivamente del sistema.
-            </p>
-
-            <div className="usuarios-confirmacion-datos">
-              <span>Correo electrónico</span>
-
-              <strong>
-                {usuarioEliminando.correo}
-              </strong>
-
-              <span>Rol actual</span>
-
-              <strong>
-                {mostrarRol(usuarioEliminando.rol)}
-              </strong>
-            </div>
-
-            <p className="usuarios-confirmacion-advertencia">
-              Esta acción no se puede deshacer.
-            </p>
-
-            {error && (
-              <div
-                className="usuarios-alerta usuarios-alerta-error"
-                role="alert"
-              >
-                {error}
-              </div>
-            )}
-
-            <footer className="usuarios-modal-acciones">
-              <button
-                type="button"
-                className="usuarios-boton-secundario"
-                onClick={cerrarConfirmacionEliminar}
-                disabled={eliminando}
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="button"
-                className="usuarios-boton-confirmar-eliminar"
-                onClick={eliminarUsuario}
-                disabled={eliminando}
-              >
-                {eliminando
-                  ? 'Eliminando...'
-                  : 'Sí, eliminar usuario'}
-              </button>
-            </footer>
-          </section>
-        </div>
-      )}
-    </main>
+      <ConfirmarEliminacion
+        usuario={usuarioEliminando}
+        error={
+          usuarioEliminando
+            ? error
+            : ''
+        }
+        eliminando={eliminando}
+        alConfirmar={eliminarUsuario}
+        alCerrar={() => {
+          if (!eliminando) {
+            establecerUsuarioEliminando(null)
+            establecerError('')
+          }
+        }}
+      />
+    </section>
   )
 }
