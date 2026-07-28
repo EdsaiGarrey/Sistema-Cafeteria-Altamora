@@ -5,6 +5,7 @@ import {
 } from 'react-router'
 import RutaProtegida from './components/autenticacion/RutaProtegida.jsx'
 import RutaPorRol from './components/autenticacion/RutaPorRol.jsx'
+import DisenoPanel from './components/panel/DisenoPanel.jsx'
 import InicioSesion from './paginas/autenticacion/InicioSesion.jsx'
 import Registro from './paginas/autenticacion/Registro.jsx'
 import RecuperarContrasena from './paginas/autenticacion/RecuperarContrasena.jsx'
@@ -19,13 +20,11 @@ import Productos from './paginas/productos/Productos.jsx'
 import './App.css'
 
 /**
- * Registra las páginas públicas, protegidas
- * y restringidas por rol del sistema.
+ * Rutas principales del sistema.
  */
-function App() {
+export default function App() {
   return (
     <Routes>
-      {/* Rutas públicas de autenticación. */}
       <Route
         path="/inicio-sesion"
         element={<InicioSesion />}
@@ -46,118 +45,106 @@ function App() {
         element={<RestablecerContrasena />}
       />
 
-      {/*
-       * Todas las rutas de este grupo
-       * requieren una sesión válida.
-       */}
       <Route element={<RutaProtegida />}>
-        <Route
-          path="/panel"
-          element={<PanelPrincipal />}
-        />
-
-        <Route
-          path="/acceso-denegado"
-          element={<AccesoDenegado />}
-        />
-
-        {/*
-         * Rutas disponibles para administrador,
-         * gerente y empleado.
-         */}
-        <Route
-          element={
-            <RutaPorRol
-              rolesPermitidos={[
-                'administrador',
-                'gerente',
-                'empleado',
-              ]}
-            />
-          }
-        >
+        <Route element={<DisenoPanel />}>
           <Route
-            path="/area-operativa"
+            path="/panel"
+            element={<PanelPrincipal />}
+          />
+
+          <Route
+            path="/acceso-denegado"
+            element={<AccesoDenegado />}
+          />
+
+          <Route
             element={
-              <AreaAutorizada
-                etiqueta="Área operativa"
-                titulo="Operación de la cafetería"
-                descripcion="Esta sección está disponible para administradores, gerentes y empleados."
+              <RutaPorRol
+                rolesPermitidos={[
+                  'administrador',
+                  'gerente',
+                  'empleado',
+                ]}
               />
             }
-          />
-
-          <Route
-            path="/pedidos"
-            element={<Pedidos />}
-          />
-        </Route>
-
-        {/*
-         * Rutas disponibles para administrador
-         * y gerente.
-         */}
-        <Route
-          element={
-            <RutaPorRol
-              rolesPermitidos={[
-                'administrador',
-                'gerente',
-              ]}
+          >
+            <Route
+              path="/pedidos"
+              element={<Pedidos />}
             />
-          }
-        >
+
+            <Route
+              path="/area-operativa"
+              element={
+                <AreaAutorizada
+                  etiqueta="Área operativa"
+                  titulo="Operación de la cafetería"
+                  descripcion="Sección disponible para los tres roles."
+                />
+              }
+            />
+          </Route>
+
           <Route
-            path="/area-gestion"
             element={
-              <AreaAutorizada
-                etiqueta="Área de gestión"
-                titulo="Gestión de Altamora"
-                descripcion="Esta sección solamente está disponible para administradores y gerentes."
+              <RutaPorRol
+                rolesPermitidos={[
+                  'administrador',
+                  'gerente',
+                ]}
               />
             }
-          />
-          <Route
-  path="/categorias"
-  element={<Categorias />}
-/>
-        </Route>
-
-        {/*
-         * Rutas exclusivas del administrador.
-         */}
-         <Route
-  path="/productos"
-  element={<Productos />}
-/>
-        <Route
-          element={
-            <RutaPorRol
-              rolesPermitidos={[
-                'administrador',
-              ]}
+          >
+            <Route
+              path="/categorias"
+              element={<Categorias />}
             />
-          }
-        >
+
+            <Route
+              path="/productos"
+              element={<Productos />}
+            />
+
+            <Route
+              path="/area-gestion"
+              element={
+                <AreaAutorizada
+                  etiqueta="Área de gestión"
+                  titulo="Gestión de Altamora"
+                  descripcion="Sección para administradores y gerentes."
+                />
+              }
+            />
+          </Route>
+
           <Route
-            path="/area-administracion"
             element={
-              <AreaAutorizada
-                etiqueta="Área administrativa"
-                titulo="Administración del sistema"
-                descripcion="Esta sección está reservada exclusivamente para usuarios administradores."
+              <RutaPorRol
+                rolesPermitidos={[
+                  'administrador',
+                ]}
               />
             }
-          />
+          >
+            <Route
+              path="/usuarios"
+              element={<Usuarios />}
+            />
 
-          <Route
-            path="/usuarios"
-            element={<Usuarios />}
-          />
+            <Route
+              path="/area-administracion"
+              element={
+                <AreaAutorizada
+                  etiqueta="Área administrativa"
+                  titulo="Administración del sistema"
+                  descripcion="Sección exclusiva del administrador."
+                />
+              }
+            />
+          </Route>
         </Route>
       </Route>
 
-      {/* Redirección de la dirección principal. */}
       <Route
         path="/"
         element={
@@ -168,7 +155,6 @@ function App() {
         }
       />
 
-      {/* Cualquier dirección desconocida regresa al acceso. */}
       <Route
         path="*"
         element={
@@ -181,5 +167,3 @@ function App() {
     </Routes>
   )
 }
-
-export default App
