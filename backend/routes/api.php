@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PedidoController;
+use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\ProductoController;
@@ -148,6 +149,27 @@ Route::middleware('auth:sanctum')
         'update',
     ]);
 
+    /*
+|--------------------------------------------------------------------------
+| Rutas protegidas del módulo de pagos
+|--------------------------------------------------------------------------
+|
+| Los usuarios autenticados pueden consultar y registrar
+| pagos relacionados con los pedidos de la cafetería.
+|
+*/
+
+    Route::middleware([
+        'auth:sanctum',
+        'rol:administrador,gerente,empleado',
+    ])->apiResource(
+        'pagos',
+        PagoController::class
+    )->only([
+        'index',
+        'store',
+        'show',
+    ]);
     /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de usuarios
