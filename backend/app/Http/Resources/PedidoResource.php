@@ -38,6 +38,15 @@ class PedidoResource extends JsonResource
             'impuestos' => $this->impuestos,
             'total' => $this->total,
 
+            /*
+            * Productos y cantidades incluidos
+            * dentro del pedido.
+            */
+            'productos' =>
+                DetallePedidoResource::collection(
+                    $this->whenLoaded('detalles')
+                ),
+
             'notas' => $this->notas,
 
             'pedido_en' =>

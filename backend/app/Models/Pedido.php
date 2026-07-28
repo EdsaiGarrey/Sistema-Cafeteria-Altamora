@@ -75,4 +75,13 @@ class Pedido extends Model
     {
         return $this->hasMany(Pago::class);
     }
+
+        /**
+     * Obtiene los productos y cantidades del pedido.
+     */
+    public function detalles(): HasMany
+    {
+        return $this->hasMany(DetallePedido::class);
+    }
+
 }

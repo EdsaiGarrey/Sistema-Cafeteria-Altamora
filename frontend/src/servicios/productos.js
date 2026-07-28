@@ -12,7 +12,14 @@ export const apiProductos = {
       method: 'GET',
     })
   },
-
+  /**
+   * Consulta productos activos para registrar pedidos.
+   */
+  disponibles() {
+    return solicitarApi('/productos-disponibles', {
+      method: 'GET',
+    })
+  },
   /**
    * Registra un producto.
    */

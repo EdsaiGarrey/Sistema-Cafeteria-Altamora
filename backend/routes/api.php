@@ -181,6 +181,24 @@ Route::middleware([
     'categorias',
     CategoriaController::class
 );
+
+/*
+|--------------------------------------------------------------------------
+| Productos disponibles para pedidos
+|--------------------------------------------------------------------------
+|
+| Los tres roles pueden consultar productos activos,
+| pero únicamente administrador y gerente pueden administrarlos.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente,empleado',
+])->get('/productos-disponibles', [
+    ProductoController::class,
+    'disponibles',
+]);
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de productos
