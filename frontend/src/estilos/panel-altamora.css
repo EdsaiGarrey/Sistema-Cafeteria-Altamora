@@ -176,6 +176,7 @@
     min-height: calc(100vh - 72px);
     padding: 18px 12px;
   }
+}
   /* Panel principal del sistema. */
 
 .altamora-dashboard {
@@ -333,5 +334,4 @@
   .altamora-dashboard-rol {
     align-self: flex-start;
   }
-}
 }
