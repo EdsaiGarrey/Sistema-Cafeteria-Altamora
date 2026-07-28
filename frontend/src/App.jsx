@@ -12,19 +12,18 @@ import RecuperarContrasena from './paginas/autenticacion/RecuperarContrasena.jsx
 import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena.jsx'
 import PanelPrincipal from './paginas/PanelPrincipal.jsx'
 import AccesoDenegado from './paginas/AccesoDenegado.jsx'
-import AreaAutorizada from './paginas/AreaAutorizada.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
 import Productos from './paginas/productos/Productos.jsx'
-import './App.css'
 
 /**
- * Rutas principales del sistema.
+ * Rutas públicas y protegidas del sistema.
  */
 export default function App() {
   return (
     <Routes>
+      {/* Rutas públicas de autenticación. */}
       <Route
         path="/inicio-sesion"
         element={<InicioSesion />}
@@ -45,6 +44,7 @@ export default function App() {
         element={<RestablecerContrasena />}
       />
 
+      {/* Todas las rutas interiores requieren sesión. */}
       <Route element={<RutaProtegida />}>
         <Route element={<DisenoPanel />}>
           <Route
@@ -57,6 +57,7 @@ export default function App() {
             element={<AccesoDenegado />}
           />
 
+          {/* Disponible para todos los roles. */}
           <Route
             element={
               <RutaPorRol
@@ -72,19 +73,9 @@ export default function App() {
               path="/pedidos"
               element={<Pedidos />}
             />
-
-            <Route
-              path="/area-operativa"
-              element={
-                <AreaAutorizada
-                  etiqueta="Área operativa"
-                  titulo="Operación de la cafetería"
-                  descripcion="Sección disponible para los tres roles."
-                />
-              }
-            />
           </Route>
 
+          {/* Disponible para administrador y gerente. */}
           <Route
             element={
               <RutaPorRol
@@ -104,19 +95,9 @@ export default function App() {
               path="/productos"
               element={<Productos />}
             />
-
-            <Route
-              path="/area-gestion"
-              element={
-                <AreaAutorizada
-                  etiqueta="Área de gestión"
-                  titulo="Gestión de Altamora"
-                  descripcion="Sección para administradores y gerentes."
-                />
-              }
-            />
           </Route>
 
+          {/* Disponible únicamente para administrador. */}
           <Route
             element={
               <RutaPorRol
@@ -129,17 +110,6 @@ export default function App() {
             <Route
               path="/usuarios"
               element={<Usuarios />}
-            />
-
-            <Route
-              path="/area-administracion"
-              element={
-                <AreaAutorizada
-                  etiqueta="Área administrativa"
-                  titulo="Administración del sistema"
-                  descripcion="Sección exclusiva del administrador."
-                />
-              }
             />
           </Route>
         </Route>
