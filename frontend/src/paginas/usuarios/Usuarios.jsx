@@ -278,9 +278,13 @@ export default function Usuarios() {
         : await apiUsuarios.crear(datos)
 
       establecerMensaje(respuesta.mensaje)
-      cerrarFormulario()
 
-      await cargarUsuarios({
+establecerMostrandoFormulario(false)
+establecerUsuarioEditando(null)
+establecerFormulario(FORMULARIO_INICIAL)
+establecerErroresFormulario({})
+
+await cargarUsuarios({
         ...filtrosAplicados,
         page: pagina,
       })
