@@ -1,138 +1,202 @@
-import { useState } from 'react'
 import {
-  Link,
-  useNavigate,
-} from 'react-router'
+  Badge,
+  Button,
+  Card,
+  Col,
+  Row,
+} from 'react-bootstrap'
+import { Link } from 'react-router'
 import { useAutenticacion } from '../contextos/useAutenticacion.js'
 
+const MODULOS = [
+  {
+    titulo: 'Pedidos',
+    descripcion:
+      'Consulta y administra los pedidos registrados.',
+    ruta: '/pedidos',
+    abreviatura: 'PE',
+    roles: [
+      'administrador',
+      'gerente',
+      'empleado',
+    ],
+  },
+  {
+    titulo: 'Categorías',
+    descripcion:
+      'Organiza los productos disponibles en la cafetería.',
+    ruta: '/categorias',
+    abreviatura: 'CA',
+    roles: [
+      'administrador',
+      'gerente',
+    ],
+  },
+  {
+    titulo: 'Productos',
+    descripcion:
+      'Registra, edita y consulta los productos.',
+    ruta: '/productos',
+    abreviatura: 'PR',
+    roles: [
+      'administrador',
+      'gerente',
+    ],
+  },
+  {
+    titulo: 'Usuarios',
+    descripcion:
+      'Administra las cuentas y los roles del sistema.',
+    ruta: '/usuarios',
+    abreviatura: 'US',
+    roles: [
+      'administrador',
+    ],
+  },
+]
+
 /**
- * Panel temporal para mostrar las opciones
- * disponibles según el rol del usuario.
+ * Convierte el rol guardado en un nombre legible.
+ */
+function obtenerRolLegible(rol) {
+  const nombres = {
+    administrador: 'Administrador',
+    gerente: 'Gerente',
+    empleado: 'Empleado',
+  }
+
+  return nombres[rol] ?? 'Usuario'
+}
+
+/**
+ * Panel principal mostrado después de iniciar sesión.
  */
 export default function PanelPrincipal() {
   const {
     usuario,
-    cerrarSesion,
   } = useAutenticacion()
 
-  const navegar = useNavigate()
-
-  const [
-    cerrandoSesion,
-    establecerCerrandoSesion,
-  ] = useState(false)
-
-  const puedeGestionar = [
-    'administrador',
-    'gerente',
-  ].includes(usuario?.rol)
-
-  const puedeAdministrar =
-    usuario?.rol === 'administrador'
-
-  /**
-   * Cierra la sesión y regresa
-   * al formulario de acceso.
-   */
-  async function manejarCierreSesion() {
-    establecerCerrandoSesion(true)
-
-    try {
-      await cerrarSesion()
-
-      navegar('/inicio-sesion', {
-        replace: true,
-      })
-    } finally {
-      establecerCerrandoSesion(false)
-    }
-  }
+  const modulosPermitidos = MODULOS.filter(
+    (modulo) => modulo.roles.includes(usuario?.rol),
+  )
 
   return (
-    <main className="panel-prueba">
-      <section className="panel-prueba-contenido">
-        <p className="panel-prueba-etiqueta">
-          Altamora Café
-        </p>
+    <section className="altamora-dashboard">
+      <header className="altamora-dashboard-presentacion">
+        <div>
+          <Badge
+            bg="light"
+            text="dark"
+            className="altamora-dashboard-etiqueta"
+          >
+            Panel principal
+          </Badge>
 
-        <h1>Panel según tu rol</h1>
-
-        <p>
-          Las opciones disponibles cambian dependiendo
-          del nivel de autorización del usuario.
-        </p>
-
-        <div className="panel-prueba-usuario">
-          <span>Usuario autenticado</span>
-
-          <strong>
+          <h1>
+            Bienvenido,{' '}
             {usuario?.nombre ?? 'Usuario'}
-          </strong>
+          </h1>
 
-          <small>
-            {usuario?.correo ??
-              'Correo no disponible'}
-          </small>
-
-          <small>
-            Rol: {usuario?.rol ?? 'No disponible'}
-          </small>
+          <p>
+            Selecciona una opción para comenzar
+            a trabajar en el sistema.
+          </p>
         </div>
 
-        <nav
-          className="panel-prueba-opciones"
-          aria-label="Secciones disponibles"
-        >
-          {/* Disponible para los tres roles. */}
-          <Link to="/area-operativa">
-            Área operativa
-          </Link>
+        <Badge className="altamora-dashboard-rol">
+          {obtenerRolLegible(usuario?.rol)}
+        </Badge>
+      </header>
 
-          <Link to="/pedidos">
-            Módulo de pedidos
-          </Link>
+      <Card className="altamora-dashboard-usuario">
+        <Card.Body>
+          <Row className="g-3 align-items-center">
+            <Col xs={12} md>
+              <small>Usuario autenticado</small>
 
-          {/* Disponible para administrador y gerente. */}
-          {puedeGestionar && (
-            <>
-              <Link to="/area-gestion">
-                Área de gestión
-              </Link>
+              <strong>
+                {usuario?.nombre ?? 'Usuario'}
+              </strong>
+            </Col>
 
-              <Link to="/categorias">
-                Administración de categorías
-              </Link>
+            <Col xs={12} md>
+              <small>Correo electrónico</small>
 
-              <Link to="/productos">
-                Administración de productos
-              </Link>
-            </>
-          )}
+              <strong>
+                {usuario?.correo ??
+                  'Correo no disponible'}
+              </strong>
+            </Col>
 
-          {/* Disponible únicamente para administrador. */}
-          {puedeAdministrar && (
-            <>
-              <Link to="/usuarios">
-                Administración de usuarios
-              </Link>
+            <Col xs={12} md="auto">
+              <small>Rol actual</small>
 
-              <Link to="/area-administracion">
-                Área administrativa
-              </Link>
-            </>
-          )}
-        </nav>
+              <strong>
+                {obtenerRolLegible(usuario?.rol)}
+              </strong>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
-        <button
-          type="button"
-          onClick={manejarCierreSesion}
-          disabled={cerrandoSesion}
-        >
-          {cerrandoSesion
-            ? 'Cerrando sesión...'
-            : 'Cerrar sesión'}
-        </button>
-      </section>
-    </main>
+      <div className="altamora-dashboard-seccion">
+        <div>
+          <h2>Módulos disponibles</h2>
+
+          <p>
+            Las opciones cambian según los permisos
+            asignados a tu cuenta.
+          </p>
+        </div>
+      </div>
+
+      <Row className="g-4">
+        {modulosPermitidos.map((modulo) => (
+          <Col
+            key={modulo.ruta}
+            xs={12}
+            md={6}
+            xl={4}
+          >
+            <Card className="altamora-dashboard-tarjeta h-100">
+              <Card.Body>
+                <div className="altamora-dashboard-icono">
+                  {modulo.abreviatura}
+                </div>
+
+                <Card.Title>
+                  {modulo.titulo}
+                </Card.Title>
+
+                <Card.Text>
+                  {modulo.descripcion}
+                </Card.Text>
+
+                <Button
+                  as={Link}
+                  to={modulo.ruta}
+                  className="altamora-dashboard-boton"
+                >
+                  Abrir módulo
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="altamora-dashboard-aviso">
+        <Card.Body>
+          <strong>
+            Sistema de Gestión Altamora
+          </strong>
+
+          <p className="mb-0">
+            Utiliza el menú lateral o las tarjetas
+            para navegar entre las funciones disponibles.
+          </p>
+        </Card.Body>
+      </Card>
+    </section>
   )
 }
