@@ -48,6 +48,9 @@ Permitirá registrar pagos en efectivo o mediante medios electrónicos autorizad
 
 Permitirá consultar ventas por fecha, número de orden, productos vendidos y monto total, además de generar reportes administrativos.
 
+## DIAGRAMA ENTIDAD RELACION
+
+
 ## Roles del sistema
 
 El sistema contará con tres roles principales:
