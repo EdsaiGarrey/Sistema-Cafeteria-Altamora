@@ -270,3 +270,11 @@ Route::middleware([
     'productos',
     ProductoController::class
 );
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->post('/cajas/cerrar', [
+    CajaController::class,
+    'cerrar',
+]);
