@@ -147,4 +147,88 @@ class CajaApiTest extends TestCase
                 $gerente->id
             );
     }
+        /**
+     * El administrador puede realizar
+     * el corte y cerrar la caja.
+     */
+    public function test_administrador_puede_cerrar_caja(): void
+    {
+        $usuario = User::factory()->create([
+            'role' => 'administrador',
+        ]);
+
+        Caja::create([
+            'usuario_apertura_id' =>
+                $usuario->id,
+
+            'monto_inicial' =>
+                1000,
+
+            'estado' =>
+                'abierta',
+
+            'abierta_en' =>
+                now(),
+        ]);
+
+        Sanctum::actingAs($usuario);
+
+        $respuesta = $this->postJson(
+            '/api/cajas/cerrar',
+            [
+                'monto_final_real' =>
+                    1000,
+
+                'observaciones' =>
+                    'Corte sin diferencias.',
+            ]
+        );
+
+        $respuesta
+            ->assertOk()
+            ->assertJsonPath(
+                'correcto',
+                true
+            )
+            ->assertJsonPath(
+                'caja.estado',
+                'cerrada'
+            )
+            ->assertJsonPath(
+                'caja.monto_final_esperado',
+                '1000.00'
+            )
+            ->assertJsonPath(
+                'caja.monto_final_real',
+                '1000.00'
+            )
+            ->assertJsonPath(
+                'caja.diferencia',
+                '0.00'
+            )
+            ->assertJsonPath(
+                'caja.usuario_cierre.id',
+                $usuario->id
+            );
+
+        $this->assertDatabaseHas(
+            'cajas',
+            [
+                'usuario_cierre_id' =>
+                    $usuario->id,
+
+                'estado' =>
+                    'cerrada',
+
+                'monto_final_esperado' =>
+                    1000,
+
+                'monto_final_real' =>
+                    1000,
+
+                'diferencia' =>
+                    0,
+            ]
+        );
+    }
 }
