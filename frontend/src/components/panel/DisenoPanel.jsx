@@ -43,7 +43,15 @@ const OPCIONES = [
         'empleado',
       ],
     },
-
+    {
+      ruta: '/caja',
+      texto: 'Caja',
+      roles: [
+        'administrador',
+        'gerente',
+        'empleado',
+      ],
+    },
   {
     ruta: '/categorias',
     texto: 'Categorías',
