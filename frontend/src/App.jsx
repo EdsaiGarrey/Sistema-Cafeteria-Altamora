@@ -13,6 +13,7 @@ import RestablecerContrasena from './paginas/autenticacion/RestablecerContrasena
 import PanelPrincipal from './paginas/PanelPrincipal.jsx'
 import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
+import Caja from './paginas/caja/Caja.jsx'
 import Pagos from './paginas/pagos/Pagos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
@@ -73,6 +74,10 @@ export default function App() {
             <Route
               path="/pedidos"
               element={<Pedidos />}
+            />
+            <Route
+              path="/caja"
+              element={<Caja />}
             />
           </Route>
           

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\ProductoController;
+use App\Http\Controllers\Api\CajaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -170,6 +171,38 @@ Route::middleware('auth:sanctum')
         'store',
         'show',
     ]);
+
+/*
+|--------------------------------------------------------------------------
+| Rutas del módulo de caja
+|--------------------------------------------------------------------------
+|
+| Todos los usuarios pueden consultar la caja activa.
+| Solo administrador y gerente pueden abrir agrega:
+
+**/
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente,empleado',
+])->get(
+    'cajas/activa',
+    [
+        CajaController::class,
+        'activa',
+    ]
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->post(
+    'cajas/abrir',
+    [
+        CajaController::class,
+        'abrir',
+    ]
+);
+    
     /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de usuarios
