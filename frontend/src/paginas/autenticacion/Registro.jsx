@@ -28,6 +28,7 @@ export default function Registro() {
   const {
     registrar,
     estaAutenticado,
+     usuario,
   } = useAutenticacion()
 
   const navegar = useNavigate()
@@ -85,7 +86,7 @@ export default function Registro() {
     establecerMensajeError('')
 
     try {
-      await registrar({
+      const respuesta = await registrar({
         name: formulario.name.trim(),
         email: formulario.email.trim(),
         password: formulario.password,
@@ -97,9 +98,12 @@ export default function Registro() {
        * Laravel devuelve el token al registrar,
        * por lo que la sesión comienza automáticamente.
        */
-      navegar('/panel', {
-        replace: true,
-      })
+      navegar('/correo-pendiente', {
+  replace: true,
+  state: {
+    correo: respuesta.usuario?.correo,
+  },
+})
     } catch (error) {
       if (error.estado === 422) {
         establecerErrores(
@@ -123,8 +127,17 @@ export default function Registro() {
    * abrir nuevamente el registro público.
    */
   if (estaAutenticado) {
-    return <Navigate to="/panel" replace />
-  }
+  return (
+    <Navigate
+      to={
+        usuario?.correo_verificado_en
+          ? '/panel'
+          : '/correo-pendiente'
+      }
+      replace
+    />
+  )
+}
 
   return (
     <DisenoAutenticacion

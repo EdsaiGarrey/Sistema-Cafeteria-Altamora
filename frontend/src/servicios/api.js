@@ -164,6 +164,17 @@ export const apiAutenticacion = {
       body: JSON.stringify(datos),
     })
   },
+    /**
+   * Reenvía el enlace de verificación al usuario autenticado.
+   */
+  reenviarVerificacionCorreo() {
+    return solicitarApi(
+      '/autenticacion/reenviar-verificacion-correo',
+      {
+        method: 'POST',
+      },
+    )
+  },
 
   /**
    * Obtiene la información del usuario autenticado.

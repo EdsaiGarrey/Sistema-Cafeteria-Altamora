@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Notifications\InicioSesionDetectado;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,9 @@ class AuthController extends Controller
             'password' => Hash::make($datos['password']),
         ]);
 
+        // Enviamos el enlace para verificar que el correo pertenece al usuario.
+$usuario->sendEmailVerificationNotification();
+
         // Creamos un token que React utilizará en las peticiones protegidas.
         $token = $usuario
             ->createToken('token-autenticacion')
@@ -41,6 +45,7 @@ class AuthController extends Controller
         return response()->json([
             'correcto' => true,
             'mensaje' => 'El usuario fue registrado correctamente.',
+            'verificacion_correo_enviada' => true,
             'token' => $token,
             'tipo_token' => 'Bearer',
             'usuario' => new UserResource($usuario),
@@ -77,9 +82,19 @@ class AuthController extends Controller
             ->createToken('token-autenticacion')
             ->plainTextToken;
 
+            // Notificamos al usuario que su cuenta inició una nueva sesión.
+$usuario->notify(
+    new InicioSesionDetectado(
+        fecha: now()->format('d/m/Y H:i:s'),
+        direccionIp: $request->ip() ?? 'No disponible',
+        agenteUsuario: $request->userAgent() ?? 'No disponible'
+    )
+);
+
         return response()->json([
             'correcto' => true,
             'mensaje' => 'Inicio de sesión realizado correctamente.',
+            'notificacion_seguridad_enviada' => true,
             'token' => $token,
             'tipo_token' => 'Bearer',
             'usuario' => new UserResource($usuario),

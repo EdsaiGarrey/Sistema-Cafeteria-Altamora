@@ -18,6 +18,8 @@ import Pagos from './paginas/pagos/Pagos.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
 import Productos from './paginas/productos/Productos.jsx'
+import CorreoPendiente from './paginas/autenticacion/CorreoPendiente.jsx'
+import CorreoVerificado from './paginas/autenticacion/CorreoVerificado.jsx'
 
 /**
  * Rutas públicas y protegidas del sistema.
@@ -45,9 +47,17 @@ export default function App() {
         path="/restablecer-contrasena"
         element={<RestablecerContrasena />}
       />
+      <Route
+        path="/correo-verificado"
+        element={<CorreoVerificado />}
+      />
 
       {/* Todas las rutas interiores requieren sesión. */}
       <Route element={<RutaProtegida />}>
+              <Route
+          path="/correo-pendiente"
+          element={<CorreoPendiente />}
+        />
         <Route element={<DisenoPanel />}>
           <Route
             path="/panel"

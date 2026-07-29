@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\PedidoController;
-use App\Http\Controllers\Api\PagoController;
-use App\Http\Controllers\Api\UsuarioController;
-use App\Http\Controllers\Api\CategoriaController;
-use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\CajaController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\PagoController;
+use App\Http\Controllers\Api\PedidoController;
+use App\Http\Controllers\Api\ProductoController;
+use App\Http\Controllers\Api\UsuarioController;
+use App\Http\Controllers\Api\VerificacionCorreoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,7 @@ Route::get('/estado', function () {
 | Estas rutas pueden utilizarse sin haber iniciado sesión.
 |
 */
+
 Route::prefix('autenticacion')->group(function () {
     // Registrar una cuenta nueva.
     Route::post('/registro', [
@@ -61,6 +63,18 @@ Route::prefix('autenticacion')->group(function () {
         AuthController::class,
         'restablecerContrasena',
     ]);
+
+    // Verificar el correo mediante el enlace firmado.
+    Route::get(
+        '/verificar-correo/{id}/{hash}',
+        [
+            VerificacionCorreoController::class,
+            'verificar',
+        ]
+    )->middleware([
+        'signed',
+        'throttle:6,1',
+    ])->name('verification.verify');
 });
 
 /*
@@ -71,6 +85,7 @@ Route::prefix('autenticacion')->group(function () {
 | Estas rutas requieren enviar un token Bearer válido en la petición.
 |
 */
+
 Route::middleware('auth:sanctum')
     ->prefix('autenticacion')
     ->group(function () {
@@ -85,8 +100,21 @@ Route::middleware('auth:sanctum')
             AuthController::class,
             'cerrarSesion',
         ]);
+
+        // Reenviar el enlace de verificación del correo.
+        Route::post(
+            '/reenviar-verificacion-correo',
+            [
+                VerificacionCorreoController::class,
+                'reenviar',
+            ]
+        )->middleware(
+            'throttle:6,1'
+        )->name('verification.send');
     });
-    /*
+
+/*
+|--------------------------------------------------------------------------
 | Rutas temporales para comprobar los permisos por rol
 |--------------------------------------------------------------------------
 |
@@ -128,7 +156,6 @@ Route::middleware([
     ]);
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de pedidos
@@ -150,37 +177,38 @@ Route::middleware('auth:sanctum')
         'update',
     ]);
 
-    /*
+/*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de pagos
 |--------------------------------------------------------------------------
 |
-| Los usuarios autenticados pueden consultar y registrar
-| pagos relacionados con los pedidos de la cafetería.
+| Los usuarios autenticados pueden consultar y registrar pagos
+| relacionados con los pedidos de la cafetería.
 |
 */
 
-    Route::middleware([
-        'auth:sanctum',
-        'rol:administrador,gerente,empleado',
-    ])->apiResource(
-        'pagos',
-        PagoController::class
-    )->only([
-        'index',
-        'store',
-        'show',
-    ]);
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente,empleado',
+])->apiResource(
+    'pagos',
+    PagoController::class
+)->only([
+    'index',
+    'store',
+    'show',
+]);
 
 /*
 |--------------------------------------------------------------------------
 | Rutas del módulo de caja
 |--------------------------------------------------------------------------
 |
-| Todos los usuarios pueden consultar la caja activa.
-| Solo administrador y gerente pueden abrir agrega:
+| Todos los usuarios autorizados pueden consultar la caja activa.
+| Solo el administrador y el gerente pueden abrir o cerrar la caja.
+|
+*/
 
-**/
 Route::middleware([
     'auth:sanctum',
     'rol:administrador,gerente,empleado',
@@ -202,14 +230,25 @@ Route::middleware([
         'abrir',
     ]
 );
-    
-    /*
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->post(
+    'cajas/cerrar',
+    [
+        CajaController::class,
+        'cerrar',
+    ]
+);
+
+/*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de usuarios
 |--------------------------------------------------------------------------
 |
-| Solo un administrador autenticado puede consultar,
-| registrar, editar o eliminar usuarios.
+| Solo un administrador autenticado puede consultar, registrar,
+| editar o eliminar usuarios.
 |
 */
 
@@ -220,6 +259,7 @@ Route::middleware([
     'usuarios',
     UsuarioController::class
 );
+
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de categorías
@@ -242,8 +282,8 @@ Route::middleware([
 | Productos disponibles para pedidos
 |--------------------------------------------------------------------------
 |
-| Los tres roles pueden consultar productos activos,
-| pero únicamente administrador y gerente pueden administrarlos.
+| Los tres roles pueden consultar productos activos, pero únicamente
+| el administrador y el gerente pueden administrarlos.
 |
 */
 
@@ -254,6 +294,7 @@ Route::middleware([
     ProductoController::class,
     'disponibles',
 ]);
+
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de productos
@@ -270,11 +311,3 @@ Route::middleware([
     'productos',
     ProductoController::class
 );
-
-Route::middleware([
-    'auth:sanctum',
-    'rol:administrador,gerente',
-])->post('/cajas/cerrar', [
-    CajaController::class,
-    'cerrar',
-]);
