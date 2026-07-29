@@ -52,6 +52,16 @@ const OPCIONES = [
         'empleado',
       ],
     },
+
+    {
+  ruta: '/historial-ventas',
+  texto: 'Historial de ventas',
+  roles: [
+    'administrador',
+    'gerente',
+    'empleado',
+  ],
+},
   {
     ruta: '/categorias',
     texto: 'Categorías',

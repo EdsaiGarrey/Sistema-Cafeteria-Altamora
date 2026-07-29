@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PedidoController;
 use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\VerificacionCorreoController;
+use App\Http\Controllers\Api\HistorialVentaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -156,6 +157,56 @@ Route::middleware([
     ]);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Historial de ventas
+|--------------------------------------------------------------------------
+|
+| Los usuarios autenticados pueden consultar las ventas registradas.
+| La cancelación continúa restringida a administrador y gerente.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente,empleado',
+])->group(function () {
+    Route::get(
+        'historial-ventas',
+        [
+            HistorialVentaController::class,
+            'index',
+        ]
+    );
+
+    Route::get(
+        'historial-ventas/{pedido}',
+        [
+            HistorialVentaController::class,
+            'show',
+        ]
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Cancelación autorizada de tickets
+|--------------------------------------------------------------------------
+|
+| Solo administrador y gerente pueden cancelar una venta.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->patch(
+    'pedidos/{pedido}/cancelar',
+    [
+        PedidoController::class,
+        'cancelar',
+    ]
+);
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de pedidos

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pedido\StorePedidoRequest;
+use App\Http\Requests\Pedido\CancelarPedidoRequest;
 use App\Http\Requests\Pedido\UpdatePedidoRequest;
 use App\Http\Resources\PedidoResource;
 use App\Models\Caja;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PedidoController extends Controller
 {
@@ -386,7 +388,75 @@ class PedidoController extends Controller
                     ->resolve($request),
         ]);
     }
+/**
+ * Cancela un ticket sin eliminarlo de la base de datos.
+ */
+public function cancelar(
+    CancelarPedidoRequest $request,
+    Pedido $pedido
+): JsonResponse {
+    $pedidoCancelado = DB::transaction(
+        function () use (
+            $request,
+            $pedido
+        ): Pedido {
+            /*
+             * Bloquea el registro para evitar dos
+             * cancelaciones simultáneas.
+             */
+            $pedidoBloqueado = Pedido::query()
+                ->lockForUpdate()
+                ->findOrFail($pedido->id);
 
+            if (
+                $pedidoBloqueado->estado ===
+                'cancelado'
+            ) {
+                throw ValidationException::withMessages([
+                    'pedido' => [
+                        'Este ticket ya fue cancelado anteriormente.',
+                    ],
+                ]);
+            }
+
+            $pedidoBloqueado->update([
+                'estado' =>
+                    'cancelado',
+
+                'cancelado_en' =>
+                    now(),
+
+                'motivo_cancelacion' =>
+                    $request->validated(
+                        'motivo_cancelacion'
+                    ),
+
+                'cancelado_por_id' =>
+                    $request->user()->id,
+            ]);
+
+            return $pedidoBloqueado->load([
+                'caja',
+                'usuario',
+                'canceladoPor',
+                'pagos.usuario',
+                'detalles.producto',
+            ]);
+        }
+    );
+
+    return response()->json([
+        'correcto' => true,
+
+        'mensaje' =>
+            'El ticket fue cancelado correctamente.',
+
+        'pedido' =>
+            (new PedidoResource(
+                $pedidoCancelado
+            ))->resolve($request),
+    ]);
+}
     /**
      * Genera un folio único para el pedido.
      */

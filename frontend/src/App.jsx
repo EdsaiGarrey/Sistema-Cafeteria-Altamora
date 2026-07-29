@@ -15,6 +15,7 @@ import AccesoDenegado from './paginas/AccesoDenegado.jsx'
 import Pedidos from './paginas/pedidos/Pedidos.jsx'
 import Caja from './paginas/caja/Caja.jsx'
 import Pagos from './paginas/pagos/Pagos.jsx'
+import HistorialVentas from './paginas/ventas/HistorialVentas.jsx'
 import Usuarios from './paginas/usuarios/Usuarios.jsx'
 import Categorias from './paginas/categorias/Categorias.jsx'
 import Productos from './paginas/productos/Productos.jsx'
@@ -88,6 +89,10 @@ export default function App() {
             <Route
               path="/caja"
               element={<Caja />}
+            />
+            <Route
+              path="/historial-ventas"
+              element={<HistorialVentas />}
             />
           </Route>
           

@@ -33,10 +33,30 @@ class PedidoResource extends JsonResource
             'tipo_servicio' => $this->tipo_servicio,
             'estado' => $this->estado,
 
+            'motivo_cancelacion' => $this->motivo_cancelacion,
+            'cancelado_por' => $this->whenLoaded(
+                    'canceladoPor',
+                    function () {
+                        return [
+                            'id' =>
+                                $this->canceladoPor?->id,
+
+                            'nombre' =>
+                                $this->canceladoPor?->name,
+
+                            'correo' =>
+                                $this->canceladoPor?->email,
+                        ];
+                    }
+                ),
             'subtotal' => $this->subtotal,
             'descuento' => $this->descuento,
             'impuestos' => $this->impuestos,
             'total' => $this->total,
+            'monto_pagado' =>
+            $this->whenNotNull(
+                $this->monto_pagado
+            ),
 
             /*
             * Productos y cantidades incluidos
@@ -45,6 +65,13 @@ class PedidoResource extends JsonResource
             'productos' =>
                 DetallePedidoResource::collection(
                     $this->whenLoaded('detalles')
+                ),
+                /*
+                * Pagos aprobados relacionados con la venta.
+                */
+                'pagos' =>
+                    PagoResource::collection(
+                        $this->whenLoaded('pagos')
                 ),
 
             'notas' => $this->notas,
