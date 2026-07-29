@@ -13,6 +13,7 @@ export default function CorreoPendiente() {
   const {
     usuario,
     establecerUsuario,
+    cerrarSesion,
   } = useAutenticacion()
 
   const navegar = useNavigate()
@@ -23,9 +24,15 @@ export default function CorreoPendiente() {
   const [comprobando, establecerComprobando] =
     useState(false)
 
+  const [cerrandoSesion, establecerCerrandoSesion] =
+    useState(false)
+
   const [mensaje, establecerMensaje] = useState('')
   const [error, establecerError] = useState('')
 
+  /**
+   * Solicita a Laravel el reenvío del correo de verificación.
+   */
   async function reenviarCorreo() {
     establecerProcesando(true)
     establecerMensaje('')
@@ -54,6 +61,10 @@ export default function CorreoPendiente() {
     }
   }
 
+  /**
+   * Consulta nuevamente al servidor para comprobar
+   * si el correo electrónico ya fue verificado.
+   */
   async function comprobarVerificacion() {
     establecerComprobando(true)
     establecerMensaje('')
@@ -65,9 +76,7 @@ export default function CorreoPendiente() {
 
       establecerUsuario(respuesta.usuario)
 
-      if (
-        respuesta.usuario?.correo_verificado_en
-      ) {
+      if (respuesta.usuario?.correo_verificado_en) {
         navegar('/panel', {
           replace: true,
         })
@@ -88,6 +97,23 @@ export default function CorreoPendiente() {
     }
   }
 
+  /**
+   * Elimina la sesión y regresa al formulario de inicio.
+   */
+  async function volverAlInicioSesion() {
+    establecerCerrandoSesion(true)
+    establecerMensaje('')
+    establecerError('')
+
+    try {
+      await cerrarSesion()
+    } finally {
+      navegar('/inicio-sesion', {
+        replace: true,
+      })
+    }
+  }
+
   return (
     <DisenoAutenticacion
       titulo="Revisa tu correo"
@@ -95,6 +121,7 @@ export default function CorreoPendiente() {
     >
       <Alert variant="info">
         Enviamos un enlace de verificación a:
+
         <strong className="d-block mt-1">
           {usuario?.correo ?? 'tu correo electrónico'}
         </strong>
@@ -123,7 +150,11 @@ export default function CorreoPendiente() {
           type="button"
           className="altamora-auth-boton"
           onClick={comprobarVerificacion}
-          disabled={comprobando || procesando}
+          disabled={
+            comprobando ||
+            procesando ||
+            cerrandoSesion
+          }
         >
           {comprobando && (
             <Spinner
@@ -142,7 +173,11 @@ export default function CorreoPendiente() {
           type="button"
           variant="outline-secondary"
           onClick={reenviarCorreo}
-          disabled={procesando || comprobando}
+          disabled={
+            procesando ||
+            comprobando ||
+            cerrandoSesion
+          }
         >
           {procesando && (
             <Spinner
@@ -155,6 +190,29 @@ export default function CorreoPendiente() {
           {procesando
             ? 'Reenviando...'
             : 'Reenviar correo de verificación'}
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline-danger"
+          onClick={volverAlInicioSesion}
+          disabled={
+            cerrandoSesion ||
+            procesando ||
+            comprobando
+          }
+        >
+          {cerrandoSesion && (
+            <Spinner
+              size="sm"
+              className="me-2"
+              aria-hidden="true"
+            />
+          )}
+
+          {cerrandoSesion
+            ? 'Cerrando sesión...'
+            : 'Cerrar sesión y volver al inicio'}
         </Button>
       </div>
     </DisenoAutenticacion>
