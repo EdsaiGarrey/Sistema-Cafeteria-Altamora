@@ -33,6 +33,24 @@ class PedidoResource extends JsonResource
             'tipo_servicio' => $this->tipo_servicio,
             'estado' => $this->estado,
 
+            'motivo_cancelacion' =>$this->motivo_cancelacion,
+
+            'cancelado_por' =>$this->whenLoaded(
+                    'canceladoPor',
+                    function () {
+                        return [
+                            'id' =>
+                                $this->canceladoPor?->id,
+
+                            'nombre' =>
+                                $this->canceladoPor?->name,
+
+                            'correo' =>
+                                $this->canceladoPor?->email,
+                        ];
+                    }
+                ),
+
             'subtotal' => $this->subtotal,
             'descuento' => $this->descuento,
             'impuestos' => $this->impuestos,

@@ -186,9 +186,15 @@ class CajaController extends Controller
             ->whereHas(
                 'pedido',
                 function ($consulta) use ($caja) {
-                    $consulta->where(
+                   $consulta
+                    ->where(
                         'caja_id',
                         $caja->id
+                    )
+                    ->where(
+                        'estado',
+                        '!=',
+                        'cancelado'
                     );
                 }
             )

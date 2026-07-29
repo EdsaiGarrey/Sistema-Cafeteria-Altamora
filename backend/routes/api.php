@@ -156,6 +156,27 @@ Route::middleware([
     ]);
 });
 
+
+
+/*
+|--------------------------------------------------------------------------
+| Cancelación autorizada de tickets
+|--------------------------------------------------------------------------
+|
+| Solo administrador y gerente pueden cancelar una venta.
+|
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'rol:administrador,gerente',
+])->patch(
+    'pedidos/{pedido}/cancelar',
+    [
+        PedidoController::class,
+        'cancelar',
+    ]
+);
 /*
 |--------------------------------------------------------------------------
 | Rutas protegidas del módulo de pedidos
