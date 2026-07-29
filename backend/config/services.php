@@ -34,5 +34,18 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    /*
+    |--------------------------------------------------------------------------
+    | Dirección del frontend de Altamora Café
+    |--------------------------------------------------------------------------
+    |
+    | Laravel utiliza esta dirección para regresar al usuario a React
+    | después de verificar correctamente su correo electrónico.
+    |
+    */
 
+    'frontend_url' => env(
+        'FRONTEND_URL',
+        'http://localhost:5173'
+    ),
 ];

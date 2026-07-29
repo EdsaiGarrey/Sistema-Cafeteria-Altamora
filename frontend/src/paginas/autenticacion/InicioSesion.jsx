@@ -27,6 +27,7 @@ export default function InicioSesion() {
   const {
     iniciarSesion,
     estaAutenticado,
+    usuario,
   } = useAutenticacion()
 
   const navegar = useNavigate()
@@ -71,15 +72,19 @@ export default function InicioSesion() {
     establecerMensajeError('')
 
     try {
-      await iniciarSesion({
+      const respuesta = await iniciarSesion({
         email: formulario.email.trim(),
         password: formulario.password,
       })
 
-      navegar(
-        ubicacion.state?.desde ?? '/panel',
-        { replace: true },
-      )
+      const destino =
+  respuesta.usuario?.correo_verificado_en
+    ? ubicacion.state?.desde ?? '/panel'
+    : '/correo-pendiente'
+
+navegar(destino, {
+  replace: true,
+})
     } catch (error) {
       if (error.estado === 422) {
         establecerErrores(
@@ -99,8 +104,17 @@ export default function InicioSesion() {
   }
 
   if (estaAutenticado) {
-    return <Navigate to="/panel" replace />
-  }
+  return (
+    <Navigate
+      to={
+        usuario?.correo_verificado_en
+          ? '/panel'
+          : '/correo-pendiente'
+      }
+      replace
+    />
+  )
+}
 
   return (
     <DisenoAutenticacion
