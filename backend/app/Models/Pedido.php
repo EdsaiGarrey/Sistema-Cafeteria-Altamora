@@ -32,6 +32,7 @@ class Pedido extends Model
         'completado_en',
         'cancelado_en',
         'motivo_cancelacion',
+        'cancelado_por_id',
     ];
 
     /**
@@ -66,6 +67,17 @@ class Pedido extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    /**
+ * Obtiene al administrador o gerente que autorizó
+ * la cancelación del ticket.
+ */
+    public function canceladoPor(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'cancelado_por_id'
+        );
     }
 
     /**
