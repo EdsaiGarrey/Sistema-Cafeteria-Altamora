@@ -166,6 +166,3 @@ http://82.25.93.110:8082/api/estado
 
 
 
-## Estado del proyecto
-
-Proyecto en fase de planificación, organización de actividades y diseño inicial.
