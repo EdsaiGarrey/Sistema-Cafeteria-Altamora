@@ -1,0 +1,28 @@
+﻿info:
+  name: 02_Registrar_Pago
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://82.25.93.110:8082/api/pagos
+  body:
+    type: json
+    data: |-
+      {
+        "pedido_id": 3,
+        "metodo_pago": "efectivo",
+        "monto": 80,
+        "monto_recibido": 80,
+        "observaciones": "Pago realizado desde Bruno"
+      }
+  auth:
+    type: bearer
+    token: {{token}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

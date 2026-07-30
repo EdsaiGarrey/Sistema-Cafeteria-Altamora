@@ -1,0 +1,27 @@
+﻿info:
+  name: 02_Abrir_Caja
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://82.25.93.110:8082/api/cajas/abrir
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "monto_inicial": 500
+      }
+  auth:
+    type: bearer
+    token: {{token}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

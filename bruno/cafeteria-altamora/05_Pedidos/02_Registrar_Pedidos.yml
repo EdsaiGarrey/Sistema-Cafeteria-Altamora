@@ -1,0 +1,36 @@
+﻿info:
+  name: 02_Registrar_Pedidos
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://82.25.93.110:8082/api/pedidos
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "caja_id": 1,
+        "cliente_nombre": "Cliente 1",
+        "tipo_servicio": "local",
+        "notas": "Pedido creado desde Bruno",
+        "productos": [
+          {
+            "producto_id": 1,
+            "cantidad": 2
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: {{token}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
