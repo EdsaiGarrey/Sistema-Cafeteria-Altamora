@@ -152,6 +152,9 @@ https://github.com/EdsaiGarrey/sistema-cafeteria-altamora
 ## Tablero de GitHub Projects
 https://github.com/EdsaiGarrey/Sistema-Cafeteria-Altamora/projects
 
+## URL de VPS con HTTPS:
+https://82.25.93.110
+
 ## LINK DE FIGMA 
 https://www.figma.com/proto/CcHQIZrLQC9spDhtGHuYSO/cafe-altamora-login?node-id=7-6&p=f&t=3R48zDdMWzb5XXDZ-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=7%3A6&show-proto-sidebar=1
 
