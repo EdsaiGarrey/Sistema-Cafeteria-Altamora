@@ -141,7 +141,7 @@ export default function PanelPrincipal() {
 
       <div className="altamora-dashboard-seccion">
         <div>
-          <h2>Módulos disponibles</h2>
+          <h2>Módulos disponibles...</h2>
 
           <p>
             Las opciones cambian según los permisos
