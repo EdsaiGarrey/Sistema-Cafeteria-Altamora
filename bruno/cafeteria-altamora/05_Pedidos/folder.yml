@@ -1,0 +1,8 @@
+﻿info:
+  name: 05_Pedidos
+  type: folder
+  seq: 5
+
+request:
+  auth: inherit
+

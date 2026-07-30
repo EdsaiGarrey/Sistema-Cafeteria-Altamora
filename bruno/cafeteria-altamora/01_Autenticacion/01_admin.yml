@@ -1,0 +1,22 @@
+﻿info:
+  name: 01_admin
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://82.25.93.110:8082/api/autenticacion/inicio-sesion
+  body:
+    type: json
+    data: |-
+      {
+        "email": "admin@altamora.com",
+        "password": "{{admin_password}}"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

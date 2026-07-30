@@ -1,0 +1,11 @@
+﻿opencollection: 1.0.0
+
+info:
+  name: cafeteria-altamora
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+

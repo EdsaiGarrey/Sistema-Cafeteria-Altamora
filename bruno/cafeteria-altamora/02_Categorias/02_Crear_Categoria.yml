@@ -1,0 +1,31 @@
+﻿info:
+  name: 02_Crear_Categoria
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://82.25.93.110:8082/api/categorias
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Cafe artesanal",
+        "descripcion": "",
+        "activo": true
+      }
+  auth:
+    type: bearer
+    token: {{token}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

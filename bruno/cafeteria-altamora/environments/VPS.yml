@@ -1,0 +1,12 @@
+﻿name: VPS
+variables:
+  - name: base_url
+    value: http://82.25.93.110:8082/api
+  - name: token
+    value: ""
+  - name: usuario_creado_id
+    value: "0"
+  - secret: true
+    name: token
+    description: ""
+
