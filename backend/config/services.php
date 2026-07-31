@@ -34,6 +34,33 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+
+
+
+    /*
+|--------------------------------------------------------------------------
+| WhatsApp Cloud API
+|--------------------------------------------------------------------------
+|
+| Credenciales utilizadas para enviar comprobantes mediante
+| la API oficial de WhatsApp Business de Meta.
+|
+*/
+
+        'whatsapp' => [
+            'version' => env(
+                'WHATSAPP_API_VERSION',
+                'v25.0'
+            ),
+
+            'phone_number_id' => env(
+                'WHATSAPP_PHONE_NUMBER_ID'
+            ),
+
+            'token' => env(
+                'WHATSAPP_TOKEN'
+            ),
+        ],
     /*
     |--------------------------------------------------------------------------
     | Dirección del frontend de Altamora Café
@@ -43,6 +70,8 @@ return [
     | después de verificar correctamente su correo electrónico.
     |
     */
+
+
 
     'frontend_url' => env(
         'FRONTEND_URL',

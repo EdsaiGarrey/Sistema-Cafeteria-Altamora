@@ -7,6 +7,7 @@ use App\Http\Requests\Pago\StorePagoRequest;
 use App\Http\Resources\PagoResource;
 use App\Models\Pago;
 use App\Models\Pedido;
+use App\Services\WhatsAppService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -15,6 +16,14 @@ use Illuminate\Validation\ValidationException;
 
 class PagoController extends Controller
 {
+
+    /**
+     * Servicio encargado de enviar mensajes por WhatsApp.
+     */
+    public function __construct(
+        private readonly WhatsAppService $whatsAppService
+    ) {
+    }
     /**
      * Lista los pagos registrados.
      */
@@ -97,6 +106,16 @@ class PagoController extends Controller
                         $datos['pedido_id']
                     );
 
+                /*
+                * Guarda el número de WhatsApp
+                * directamente en el pedido.
+                */
+                $pedido->cliente_telefono =
+                    $datos['cliente_telefono'];
+
+                $pedido->save();
+
+                
                 if ($pedido->estado === 'cancelado') {
                     throw ValidationException::withMessages([
                         'pedido_id' => [
@@ -219,18 +238,41 @@ class PagoController extends Controller
                     'usuario',
                 ]);
 
+               $saldoPendiente = $this->deCentavos(
+        $pendienteCentavos -
+         $montoCentavos
+);
+
                 return [
                     'pago' =>
                         $pago,
 
                     'saldo_pendiente' =>
-                        $this->deCentavos(
-                            $pendienteCentavos -
-                            $montoCentavos
-                        ),
+                        $saldoPendiente,
+
+                    'cliente_telefono' =>
+                        $pedido->cliente_telefono,
                 ];
             }
         );
+
+                /*
+                * El mensaje se envía después de confirmar el pago
+                * en la base de datos. Una falla de WhatsApp no
+                * elimina ni revierte el pago registrado.
+                */
+                $whatsAppEnviado = null;
+
+                if (
+                    (float) $resultado['saldo_pendiente'] === 0.0
+                ) {
+                    $whatsAppEnviado =
+                        $this->whatsAppService
+                            ->enviarMensajePrueba(
+                                $resultado['cliente_telefono']
+                            );
+                }
+
 
         return response()->json([
             'correcto' => true,
@@ -245,6 +287,8 @@ class PagoController extends Controller
 
             'saldo_pendiente' =>
                 $resultado['saldo_pendiente'],
+             'whatsapp_enviado' =>
+                $whatsAppEnviado,
         ], 201);
     }
 

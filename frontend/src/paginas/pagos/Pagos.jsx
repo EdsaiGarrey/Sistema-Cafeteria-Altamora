@@ -14,6 +14,7 @@ import { apiPedidos } from '../../servicios/pedidos.js'
 
 const formularioInicial = {
   pedido_id: '',
+  cliente_telefono: '',
   metodo_pago: 'efectivo',
   monto: '',
   monto_recibido: '',
@@ -169,6 +170,7 @@ export default function Pagos() {
     try {
       const datos = {
         pedido_id: Number(formulario.pedido_id),
+        cliente_telefono: formulario.cliente_telefono,
         metodo_pago: formulario.metodo_pago,
         monto: Number(formulario.monto),
         monto_recibido:
@@ -294,6 +296,30 @@ export default function Pagos() {
 
           <Modal.Body>
             <Form.Group className="mb-3">
+              <Form.Group className="mb-3">
+  <Form.Label>Número de WhatsApp</Form.Label>
+
+  <Form.Control
+    type="tel"
+    name="cliente_telefono"
+    inputMode="numeric"
+    pattern="[0-9]{10}"
+    maxLength={10}
+    placeholder="Ejemplo: 9511234567"
+    value={formulario.cliente_telefono}
+    onChange={cambiarCampo}
+    isInvalid={Boolean(errores.cliente_telefono)}
+    required
+  />
+
+  <Form.Text className="text-muted">
+    Escribe exactamente 10 dígitos, sin +52, espacios ni guiones.
+  </Form.Text>
+
+  <Form.Control.Feedback type="invalid">
+    {errores.cliente_telefono?.[0]}
+  </Form.Control.Feedback>
+</Form.Group>
               <Form.Label>Pedido</Form.Label>
 
               <Form.Select

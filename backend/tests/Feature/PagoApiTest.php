@@ -6,6 +6,8 @@ use App\Models\Caja;
 use App\Models\Pedido;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -14,6 +16,27 @@ class PagoApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+ * Prepara una respuesta falsa de Meta durante las pruebas.
+ */
+protected function setUp(): void
+{
+    parent::setUp();
+
+    Http::fake([
+        'https://graph.facebook.com/*' =>
+            Http::response(
+                [
+                    'messages' => [
+                        [
+                            'id' => 'wamid.prueba',
+                        ],
+                    ],
+                ],
+                200
+            ),
+    ]);
+}
     /**
      * Comprueba el registro de un pago en efectivo,
      * el cálculo del cambio y el saldo pendiente.
@@ -36,6 +59,9 @@ class PagoApiTest extends TestCase
             [
                 'pedido_id' =>
                     $pedido->id,
+
+                'cliente_telefono' =>
+                    '9511234567',
 
                 'metodo_pago' =>
                     'efectivo',
@@ -78,6 +104,9 @@ class PagoApiTest extends TestCase
             'pago.id'
         );
 
+        /*
+         * Comprueba que el pago fue guardado.
+         */
         $this->assertDatabaseHas(
             'pagos',
             [
@@ -101,6 +130,21 @@ class PagoApiTest extends TestCase
 
                 'estado' =>
                     'aprobado',
+            ]
+        );
+
+        /*
+         * Comprueba que el teléfono de WhatsApp
+         * fue guardado dentro del pedido.
+         */
+        $this->assertDatabaseHas(
+            'pedidos',
+            [
+                'id' =>
+                    $pedido->id,
+
+                'cliente_telefono' =>
+                    '9511234567',
             ]
         );
 
@@ -161,6 +205,9 @@ class PagoApiTest extends TestCase
                 'pedido_id' =>
                     $pedido->id,
 
+                'cliente_telefono' =>
+                    '9511234567',
+
                 'metodo_pago' =>
                     'transferencia',
 
@@ -181,6 +228,9 @@ class PagoApiTest extends TestCase
             [
                 'pedido_id' =>
                     $pedido->id,
+
+                'cliente_telefono' =>
+                    '9511234567',
 
                 'metodo_pago' =>
                     'efectivo',
@@ -227,6 +277,9 @@ class PagoApiTest extends TestCase
                 'pedido_id' =>
                     $pedido->id,
 
+                'cliente_telefono' =>
+                    '9511234567',
+
                 'metodo_pago' =>
                     'efectivo',
 
@@ -259,6 +312,96 @@ class PagoApiTest extends TestCase
             ->assertUnauthorized();
     }
 
+    /**
+ * Comprueba que se envíe WhatsApp cuando el pedido
+ * queda completamente pagado.
+ */
+public function test_envia_whatsapp_al_completar_el_pago(): void
+{
+    $usuario = User::factory()->create([
+        'role' => 'empleado',
+    ]);
+
+    $pedido = $this->crearPedido(
+        $usuario,
+        100
+    );
+
+    Sanctum::actingAs($usuario);
+
+    $respuesta = $this->postJson(
+        '/api/pagos',
+        [
+            'pedido_id' =>
+                $pedido->id,
+
+            'cliente_telefono' =>
+                '9511234567',
+
+            'metodo_pago' =>
+                'efectivo',
+
+            'monto' =>
+                100,
+
+            'monto_recibido' =>
+                100,
+        ]
+    );
+
+    $respuesta
+        ->assertCreated()
+        ->assertJsonPath(
+            'correcto',
+            true
+        )
+        ->assertJsonPath(
+            'saldo_pendiente',
+            0
+        )
+        ->assertJsonPath(
+            'whatsapp_enviado',
+            true
+        );
+
+    /*
+     * Confirma que el teléfono se guardó
+     * dentro del pedido.
+     */
+    $this->assertDatabaseHas(
+        'pedidos',
+        [
+            'id' =>
+                $pedido->id,
+
+            'cliente_telefono' =>
+                '9511234567',
+        ]
+    );
+
+    /*
+     * Confirma que Laravel preparó la solicitud
+     * destinada a la API de WhatsApp.
+     */
+    Http::assertSent(
+        function (HttpRequest $solicitud): bool {
+            $datos = $solicitud->data();
+
+            return str_contains(
+                $solicitud->url(),
+                '/messages'
+            )
+                && ($datos['to'] ?? null) ===
+                    '529511234567'
+                && ($datos['type'] ?? null) ===
+                    'template'
+                && (
+                    $datos['template']['name']
+                    ?? null
+                ) === 'hello_world';
+        }
+    );
+}
     /**
      * Crea un pedido listo para probar pagos.
      */

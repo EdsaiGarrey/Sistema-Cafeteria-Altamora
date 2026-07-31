@@ -46,6 +46,11 @@ class StorePagoRequest extends FormRequest
                 'numeric',
                 'min:0.01',
             ],
+            'cliente_telefono' => [
+            'required',
+            'string',
+            'regex:/^[0-9]{10}$/',
+        ],
 
             /*
              * En efectivo es obligatorio indicar
@@ -136,6 +141,12 @@ class StorePagoRequest extends FormRequest
 
             'observaciones.max' =>
                 'Las observaciones no pueden superar 1000 caracteres.',
+                
+            'cliente_telefono.required' =>
+                'Debes escribir el número de WhatsApp del cliente.',
+
+            'cliente_telefono.regex' =>
+                'El número de WhatsApp debe contener exactamente 10 dígitos.',
         ];
     }
 }
