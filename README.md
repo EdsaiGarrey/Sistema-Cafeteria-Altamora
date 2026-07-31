@@ -51,7 +51,7 @@ Permitirá consultar ventas por fecha, número de orden, productos vendidos y mo
 ## DIAGRAMA ENTIDAD RELACION
 <img width="1448" height="1086" alt="ChatGPT Image 31 jul 2026, 02_59_13 a m" src="https://github.com/user-attachments/assets/b6ab0247-7721-46fa-933c-9d531164e46e" />
 
-<img width="1448" height="1086" alt="ChatGPT Image 29 jul 2026, 04_34_40 a m" src="https://github.com/user-attachments/assets/9b72febc-790e-46c4-8124-6e2e5fabcce0" />
+
 
 
 ## Roles del sistema
